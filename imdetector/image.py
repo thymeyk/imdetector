@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 
 
-class Image:
+class SuspectImage():
     def __init__(self, name=None, isGabor=False, isHist=False, algorithm='orb', nfeatures=2000):
         self.name = ''
         self.mat = 0

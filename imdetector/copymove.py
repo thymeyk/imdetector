@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 from .base import BaseDetector, DrawFlags
-from .image import Image
+from .image import SuspectImage
 
 
 class Duplication(BaseDetector):
@@ -36,10 +36,10 @@ class Duplication(BaseDetector):
         self.flags = flags
 
 
-    def detect(self, img1: Image, img2: Image) -> int:
+    def detect(self, img1: SuspectImage, img2: SuspectImage) -> int:
         """
-        :param img1: Image class instance
-        :param img2: Image class instance
+        :param img1: SuspectImage class instance
+        :param img2: SuspectImage class instance
         :return: int, detect(1) or not(0)
         """
         if (len(img1.kp) < 2 or len(img2.kp) < 2):
@@ -52,7 +52,7 @@ class Duplication(BaseDetector):
             matches = img1.bf.knnMatch(img1.des, img2.des, k=2)
             self.matches_ = self.ratio_test(matches)
 
-        self.result_path_ = self.find_homography(img1, img2)
+        self.find_homography(img1, img2)
         result = 1 if hasattr(self, 'mask_') else 0
 
         return result
@@ -72,7 +72,7 @@ class Duplication(BaseDetector):
         return good_matches
 
 
-    def find_homography(self, img1: Image, img2: Image):
+    def find_homography(self, img1: SuspectImage, img2: SuspectImage):
         """
         この関数は２つの画像から得られた点の集合を与えると，その物体の射影変換を計算する。
         ransacReprojThresholdは点の組をインライア値として扱うために許容される逆投影誤差の最大値。1~10が妥当。
@@ -94,12 +94,12 @@ class Duplication(BaseDetector):
 
             # キーポイントのうちminKey以上を含むならマスクを採用（＝DETECT!）
             if matches_mask.count(1) / len(matches_mask) >= self.min_key:
-                if DrawFlags(self.flags) != DrawFlags.RETURN_RESULT:
+                if self.flags != DrawFlags.RETURN_RESULT:
                     self.draw_match(img1, img2, src_pts)
         return self
 
 
-    def draw_match(self, img1: Image, img2: Image, src_pts: np.ndarray):
+    def draw_match(self, img1: SuspectImage, img2: SuspectImage, src_pts: np.ndarray):
         x, y, w, h = cv.boundingRect(
             np.float32(src_pts)[self.mask_.ravel() == 1])
         img1_rect = cv.rectangle(
@@ -111,7 +111,7 @@ class Duplication(BaseDetector):
 
         img2_rect = cv.polylines(img2.mat.copy(), [np.int32(dst)], isClosed=True, color=self.color, thickness=3, lineType=cv.LINE_AA)  # LINE_AA:アンチエイリアス
 
-        if DrawFlags(self.flags) == DrawFlags.SHOW_RESULT:
+        if self.flags == DrawFlags.SHOW_RESULT:
             img1_name, img2_name = img1.name.split('/')[-1], img2.name.split('/')[-1]
 
             fig = plt.figure()
@@ -133,7 +133,7 @@ class Duplication(BaseDetector):
 
             plt.close()
 
-        elif DrawFlags(self.flags) == DrawFlags.SHOW_FULL_RESULT:
+        elif self.flags == DrawFlags.SHOW_FULL_RESULT:
             draw_params = dict(matchColor=self.color,
                                singlePointColor=None,
                                matchesMask=self.mask_.ravel().tolist(),  # draw only inliers
@@ -141,14 +141,6 @@ class Duplication(BaseDetector):
             self.image_ = cv.drawMatches(
                 img1_rect, img1.kp, img2_rect, img2.kp, self.matches_, None, **draw_params)
 
-        return self
-
-
-    def save_image(self, filename: str):
-        if hasattr(self, 'image_'):
-            cv.imwrite(filename, self.image_)
-        else:
-            print('Error: There is no result.')
         return self
 
 
@@ -179,7 +171,7 @@ class CopyMove(Duplication):
         self.min_dis = min_dis
 
 
-    def detect(self, img1: Image, img2=None) -> int:
+    def detect(self, img1: SuspectImage, img2=None) -> int:
         """
         :param img1: Image class instance
         :return: int, detect(1) or not(0)
@@ -202,7 +194,7 @@ class CopyMove(Duplication):
         good = self.ratio_test(matches2)
         self.matches_ = self.distance_cutoff(img1.kp, good)
 
-        self.result_path_ = self.find_homography(img1)
+        self.find_homography(img1)
         result = 1 if hasattr(self, 'mask_') else 0
 
         return result
@@ -227,11 +219,11 @@ class CopyMove(Duplication):
         return better
 
 
-    def find_homography(self, img1: Image, img2=None):
+    def find_homography(self, img1: SuspectImage, img2=None):
         super(CopyMove, self).find_homography(img1=img1, img2=img1)
 
 
-    def draw_match(self, img1: Image, img2: Image, src_pts: np.ndarray):
+    def draw_match(self, img1: SuspectImage, img2: SuspectImage, src_pts: np.ndarray):
         x, y, w, h = cv.boundingRect(
             np.float32(src_pts)[self.mask_.ravel() == 1])
         img_rect = cv.rectangle(
@@ -244,7 +236,7 @@ class CopyMove(Duplication):
         self.image_ = cv.polylines(img_rect, [np.int32(dst)], isClosed=True,
                                    color=self.color, thickness=3, lineType=cv.LINE_AA)
 
-        if DrawFlags(self.flags) == DrawFlags.SHOW_FULL_RESULT:
+        if self.flags == DrawFlags.SHOW_FULL_RESULT:
             for m in self.matches_:
                 cv.line(self.image_, tuple(map(round, img1.kp[m.queryIdx].pt)), tuple(
                     map(round, img1.kp[m.trainIdx].pt)), color=self.color)

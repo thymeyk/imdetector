@@ -1,8 +1,18 @@
 import inspect
-from enum import Enum
+import cv2 as cv
+from enum import IntEnum
 
 
-class DrawFlags(Enum):
+class Color(IntEnum):
+    B = 0
+    G = 1
+    R = 2
+    Y = 3
+    Cr = 4
+    Cb = 5
+
+
+class DrawFlags(IntEnum):
     SHOW_RESULT = 0
     SHOW_FULL_RESULT = 1
     RETURN_RESULT = 2
@@ -14,7 +24,6 @@ class BaseDetector:
     """
     @classmethod
     def _get_param_names(cls):
-
         init = getattr(cls.__init__, 'deprecated_original', cls.__init__)
         if init is object.__init__:
             # No explicit constructor to introspect
@@ -58,3 +67,11 @@ class BaseDetector:
             repr_ += '{}={}, '.format(name, val)
         repr_ = repr_.rsplit(',', 1)[0]
         return '{}({})'.format(self.__class__.__name__, repr_)
+
+
+    def save_image(self, file_name):
+        if hasattr(self, 'image_'):
+            cv.imwrite(file_name, self.image_)
+        else:
+            print('Error: There is no result.')
+        return self
