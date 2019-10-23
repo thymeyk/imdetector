@@ -1,66 +1,68 @@
+import os
+
 import cv2 as cv
-import numpy as np
 
 
-class SuspectImage():
-    def __init__(self, name=None, isGabor=False, isHist=False, algorithm='orb', nfeatures=2000):
-        self.name = ''
-        self.mat = 0
-        self.gray = 0
-        self.isHist = isHist
-        self.isGabor = isGabor
+class SuspiciousImage:
+    def __init__(self,
+                 path=None, hist_eq=True,
+                 algorithm='orb', nfeatures=5000):
+        self.path = path
+        self.hist_eq = hist_eq
+        self.algorithm = algorithm
+        self.nfeatures = nfeatures
 
-        if name is not None:
-            self.read(name, algorithm, nfeatures)
+        self.mat = None
+        self.gray = None
 
-    def read(self, name, algorithm, nfeatures):
+        self.paintout = 0
+        self.duplication = 0
+        self.copymove = 0
+        self.cutpaste = 0
+
+        if path is not None:
+            self.name = os.path.basename(self.path)
+            self.read()
+
+    def read(self):
         # Read image
-        self.name = name
-        if name.split('.')[-1] == 'gif':
-            gif = cv.VideoCapture(self.name)
+        if self.path.split('.')[-1] == 'gif':
+            gif = cv.VideoCapture(self.path)
             _, self.mat = gif.read()
         else:
-            self.mat = cv.imread(self.name)
+            self.mat = cv.imread(self.path)
 
         # Convert to Gray image
         self.gray = cv.cvtColor(self.mat, cv.COLOR_BGR2GRAY)
 
-        self.keypoint(algorithm=algorithm, nfeatures=nfeatures)
+        self.keypoint()
 
-    def keypoint(self, algorithm='orb', nfeatures=2000):
-        if type(self.mat) == type(0):
+        return self
+
+    def keypoint(self):
+        if self.mat is None:
             self.mat = cv.cvtColor(self.gray, cv.COLOR_GRAY2BGR)
-        elif type(self.gray) == type(0):
+        elif self.gray is None:
             self.gray = cv.cvtColor(self.mat, cv.COLOR_BGR2GRAY)
 
         self.keyimg = self.gray
 
-        if self.isGabor:
-            sigma = 8
-            filtered = [cv.filter2D(self.keyimg, -1,
-                                    cv.getGaborKernel(ksize=(4 * sigma, 4 * sigma),
-                                                      sigma=sigma,
-                                                      theta=np.radians(
-                                                          i * 22.5),
-                                                      lambd=10,
-                                                      gamma=2,
-                                                      psi=0))
-                        for i in range(8)]
-            self.keyimg = np.mean(np.array(filtered), axis=0).astype('uint8')
-        if self.isHist:
+        if self.hist_eq:
             self.keyimg = cv.equalizeHist(self.keyimg)
 
-        if algorithm == 'orb':
-            self.detector = cv.ORB_create(nfeatures=nfeatures)
+        if self.algorithm == 'orb':
+            self.detector = cv.ORB_create(nfeatures=self.nfeatures)
             self.bf = cv.BFMatcher(cv.NORM_HAMMING)
-        elif algorithm == 'akaze':
+        elif self.algorithm == 'akaze':
             self.detector = cv.AKAZE_create()
             self.bf = cv.BFMatcher(cv.NORM_HAMMING)
-        elif algorithm == 'sift':
+        elif self.algorithm == 'sift':
             self.detector = cv.xfeatures2d.SIFT_create()
             self.bf = cv.BFMatcher(cv.NORM_L2)
-        elif algorithm == 'surf':
+        elif self.algorithm == 'surf':
             self.detector = cv.xfeatures2d.SURF_create()
             self.bf = cv.BFMatcher(cv.NORM_L2)
 
         self.kp, self.des = self.detector.detectAndCompute(self.keyimg, None)
+
+        return self

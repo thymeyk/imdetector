@@ -22,6 +22,7 @@ class BaseDetector:
     """
     Base class for all detectors
     """
+
     @classmethod
     def _get_param_names(cls):
         init = getattr(cls.__init__, 'deprecated_original', cls.__init__)
@@ -34,19 +35,11 @@ class BaseDetector:
                       if p.name != 'self' and p.kind != p.VAR_KEYWORD]
         return sorted([p.name for p in parameters])
 
-
     def get_params(self):
-        """Get parameters for this estimator.
-        Parameters
-        ----------
-        deep : boolean, optional
-            If True, will return the parameters for this estimator and
-            contained subobjects that are estimators.
-        Returns
-        -------
-        params : mapping of string to any
-            Parameter names mapped to their values.
         """
+        Get parameters for this estimator.
+        """
+
         out = dict()
         for key in self._get_param_names():
             try:
@@ -59,7 +52,6 @@ class BaseDetector:
             out[key] = value
         return out
 
-
     def __repr__(self):
         params = self.get_params()
         repr_ = ''
@@ -68,10 +60,9 @@ class BaseDetector:
         repr_ = repr_.rsplit(',', 1)[0]
         return '{}({})'.format(self.__class__.__name__, repr_)
 
-
     def save_image(self, file_name):
         if hasattr(self, 'image_'):
             cv.imwrite(file_name, self.image_)
         else:
-            print('Error: There is no result.')
+            print('Error: There is no result image.')
         return self

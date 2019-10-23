@@ -21,6 +21,7 @@ joblib = "*"
 cython = "*"
 pandas = "*"
 numba = "*"
+pywt = "*"
 
 [requires]
 python_version = "3.7"
