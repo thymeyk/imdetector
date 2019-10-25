@@ -19,6 +19,7 @@ class PaintOut(BaseDetector):
     image_ : array,
     ratio_ : float,
     """
+
     def __init__(self,
                  ksize=11, min_area=100,
                  color=(0, 255, 255), flags=DrawFlags.SHOW_RESULT):
@@ -38,10 +39,7 @@ class PaintOut(BaseDetector):
         return result
 
     def find_flat_area(self, img):
-        lap = abs(cv.filter2D(
-            img.gray, -1, np.array([[1, 1, 1],
-                                    [1, -8, 1],
-                                    [1, 1, 1]], np.float32), delta=100).astype('int') - 100)
+        lap = img.lap
         lap = np.where(lap < 1, 255, 0).astype('uint8')
         lap = cv.medianBlur(lap, ksize=self.ksize)
 
@@ -54,6 +52,8 @@ class PaintOut(BaseDetector):
         if len(cnt) > 0:
             if self.flags == DrawFlags.SHOW_RESULT or self.flags == DrawFlags.SHOW_FULL_RESULT:
                 self.image_ = cv.drawContours(img.mat, cnt, -1, self.color, -1)
-            self.ratio_ = np.sum(self.image_[:, :, 1] == 255) / img.gray.flatten().shape[0]
+            self.ratio_ = np.sum(
+                self.image_[
+                    :, :, 1] == 255) / img.gray.flatten().shape[0]
 
         return self

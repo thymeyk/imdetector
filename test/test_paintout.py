@@ -1,21 +1,26 @@
+import os
 import unittest
 
 from imdetector.image import SuspiciousImage
 from imdetector.paintout import PaintOut
 
+DIR = os.getcwd()
+
 
 class TestPaintOut(unittest.TestCase):
-    def test_copymove(self):
+    def test_paintout1(self):
         expected = 1
-        img1 = SuspiciousImage('./image/yrc_5_po.png')
+        img1 = SuspiciousImage(os.path.join(DIR, 'test/image/yrc_5_po.png'))
         detector = PaintOut()
         actual = detector.detect(img1)
-        detector.save_image('./image/paintout_result.jpg')
+        detector.save_image(
+            os.path.join(
+                DIR, 'test/image/paintout_result.jpg'))
         self.assertEqual(expected, actual)
 
-    def test_copymove2(self):
+    def test_paintout0(self):
         expected = 0
-        img1 = SuspiciousImage('./image/yrc_16.png')
+        img1 = SuspiciousImage(os.path.join(DIR, 'test/image/yrc_16.png'))
         detector = PaintOut()
         actual = detector.detect(img1)
         self.assertEqual(expected, actual)

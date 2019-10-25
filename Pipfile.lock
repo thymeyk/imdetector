@@ -471,19 +471,20 @@
         },
         "scikit-image": {
             "hashes": [
-                "sha256:00bbc1d6702c6fe6948a3b9ebd05c0d4cfc49e7a058b87f44ca599e75eadecce",
-                "sha256:084ecd3dc7ef32bc8725a78b2722012d3e8385c446e812dae2792ce2e9111225",
-                "sha256:2a874c5864fe686780e2863fb4c323f0ebcd2cb4e4b9b650def54e66e6f12ac0",
-                "sha256:41f6410054011e1b015af658d3916221cb97964d648c92d533a2144ca7657e62",
-                "sha256:4fbdbe217ac070dd98bd42ad02872f27ab96b4f5e1fdca6952cff5ffe81c2170",
-                "sha256:655c7ab92ac3e3bdf9bee47d24784e5b4d9abd127f8732df7c8de89f95b254b1",
-                "sha256:7d7f43f067ccb82aa335cd0af1de606dfa12193b4551baa8c16be0ecb76a49a9",
-                "sha256:824fe3e6a06c64f264aa94e59687d8bb7523ffc6778dad958d388e993f5aaecd",
-                "sha256:b819ac00c298c98ff18266756339e5c5a3682d13d280eb8d4b226582455f249d",
-                "sha256:f1508b1eddd49c816b3bcae14a4d3eb921f2623559cdae87a0d11133b36ee36d"
+                "sha256:063d1c20fcd53762f82ee58c29783ae4e8f6fbed445b41b704fa33b6f355729d",
+                "sha256:0808ab5f8218d91a1c008036993636535a37efd67a52ab0f2e6e3f4b7e75aeda",
+                "sha256:2a54bea469eb1b611bee1ce36e60710f5f94f29205bc5bd67a51793909b1e62b",
+                "sha256:2aa962aa82d815606d7dad7f045f5d7ca55c65b4320d47e15a98fc92612c2d6c",
+                "sha256:2d346d49b6852cffb47cbde995e2696d5b07f688d8c057a0a4548abf3a98f920",
+                "sha256:3ad2efa792ab8de5fcefe6f4f5bc1ab64c411cdb5c829ce1526ab3a5a7729627",
+                "sha256:3af3d781ce085573ced37b2b5b9abfd32ce3d4723bd17f37e829025d189b0421",
+                "sha256:6786b127f33470fd843e644435522fbf43bce05c9f5527946c390ccb9e1cac27",
+                "sha256:8b2b768b02c6b7476f2e16ddd91f827d3817aef73f82cf28bff7a8dcdfd8c55c",
+                "sha256:dd7fbd32da74d4e9967dc15845f731f16e7966cee61f5dc0e12e2abb1305068c",
+                "sha256:e774377876cb258e8f4d63f7809863f961c98aa02263b3ff54a39483bc6f7d26"
             ],
             "index": "pypi",
-            "version": "==0.16.1"
+            "version": "==0.16.2"
         },
         "scikit-learn": {
             "hashes": [

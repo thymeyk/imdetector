@@ -1,3 +1,5 @@
+import os
+
 import pywt
 import cv2 as cv
 import numpy as np
@@ -5,24 +7,19 @@ from itertools import chain
 from multiprocessing import Pool
 
 from skimage.feature import local_binary_pattern
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.externals import joblib
-from sklearn.metrics import classification_report
-from sklearn.svm import SVC
 
-from imdetector.utils import extract_nonoverlap_patches
-from .base import BaseDetector, DrawFlags, Color
-from .image import SuspiciousImage
+from .utils import extract_nonoverlap_patches
+from .base import BaseFeatureExtractor, DrawFlags, Color, BaseDetectorMachine
 
 
-class DWTFeatureExtractor:
+class DWTFeatureExtractor(BaseFeatureExtractor):
     """
     Parameters
     ----------
     channel : int, (default=Color.B)
         See base.Color.
     block_size : int, (default=0)
-        Length of one side of the block.
+        Length of one side of block.
     t : int, (default=4)
         Truncation threshold.
     n_jobs : int, (default=1)
@@ -33,24 +30,6 @@ class DWTFeatureExtractor:
         self.t = t
         self.block_size = block_size
         self.n_jobs = n_jobs
-
-    def extract(self, img):
-        """
-        :param list | np.ndarray | SuspiciousImage img: suspicious image(s)
-        :return: X, feature matrix of suspicious image(s)
-        :rtype: np.ndarray
-        """
-
-        if isinstance(img, SuspiciousImage):
-            X = np.array(self.feature(img.mat))
-        elif isinstance(img, np.ndarray):
-            X = np.array(self.feature(img))
-        elif isinstance(img, list):
-            X = np.array([self.feature(imarray) for imarray in img])
-        else:
-            print("ERROR: unsupported input type")
-            return 0
-        return X
 
     @staticmethod
     def block_dwt(b, wavelet='dmey'):
@@ -128,16 +107,9 @@ class DWTFeatureExtractor:
                   [[W[k], Dh[k], Dv[k], self.t] for k in range(13)])
         p.close()
 
-        X = np.array(chain.from_iterable(M))
-        X = X.flatten()
+        X = list(chain.from_iterable(M))
 
         return X
-
-    def save_features(self, img, file_name):
-        X = self.extract(img)
-        if not isinstance(X, int):
-            np.savetxt(file_name, X, delimiter=',')
-        return self
 
 
 class LBPDCTFeatureExtractor(DWTFeatureExtractor):
@@ -156,7 +128,7 @@ class LBPDCTFeatureExtractor(DWTFeatureExtractor):
     def feature(self, img):
         """
         :param np.ndarray img: suspicious image
-        :return: X, feature matrix of suspect image(s)
+        :return: X, feature vector of suspect image
         :rtype: np.ndarray
         """
 
@@ -183,7 +155,7 @@ class LBPDCTFeatureExtractor(DWTFeatureExtractor):
         return std
 
 
-class CutPaste(BaseDetector):
+class CutPaste(BaseDetectorMachine):
     """
     Parameters
     ----------
@@ -194,16 +166,17 @@ class CutPaste(BaseDetector):
     Attributes
     ----------
     clf_ : classifier,
-    pred_proba_ : float,
+    proba_ : array-like, shape (n_samples,)
     """
 
-    def __init__(self,
-                 feature_extractor=DWTFeatureExtractor,
-                 model_name='../model/cutpaste_svm.sav',
-                 flags=DrawFlags.SHOW_RESULT):
-        self.feature_extractor = feature_extractor()
-        self.model_name = model_name
-        self.flags = flags
+    def __init__(
+            self,
+            feature_extractor=DWTFeatureExtractor,
+            model_name='./model/cutpaste_svm_yrc_200.sav',
+            param_name='./model/cutpaste_svm_yrc_200.sav-param.npz',
+            flags=DrawFlags.SHOW_RESULT):
+        super().__init__(feature_extractor, model_name, flags)
+        self.param_name = param_name
 
     def detect(self, img):
         """
@@ -212,44 +185,21 @@ class CutPaste(BaseDetector):
         :rtype: int
         """
 
-        if hasattr(self, 'clf_'):
-            self.clf_ = joblib.load(self.model_name)
-
-        X = self.feature_extractor.extract(img)
+        X = super().detect(img)
+        if os.path.exists(self.param_name):
+            dictionary = np.load(self.param_name)
+            support = dictionary['support']
+            X = X[:, support]
 
         pred = self.clf_.predict(X)
 
         if self.flags == DrawFlags.SHOW_RESULT or self.flags == DrawFlags.SHOW_FULL_RESULT:
-            self.pred_proba_ = self.clf_.predict_proba(X)
+            self.proba_ = self.clf_.predict_proba(X)[:, 1]
 
         return pred
 
-    def load_model(self, model_name):
-        self.clf_ = joblib.load(model_name)
-
-    def fit_img(self, train_img, train_y, test_img, test_y):
-        train_X = self.feature_extractor.extract(train_img)
-        test_X = self.feature_extractor.extract(test_img)
-        self.fit_X(train_X, train_y, test_X, test_y)
-
     def fit_X(self, train_X, train_y, test_X, test_y,
-              model='svm', C=1000, gamma=0.001,
-              n_estimators=1000, max_depth=50):
-        if model == 'svm':
-            probability = (self.flags == DrawFlags.SHOW_RESULT
-                           or self.flags == DrawFlags.SHOW_FULL_RESULT)
-            self.clf_ = SVC(C=C,
-                            gamma=gamma,
-                            probability=probability)
-        elif model == 'rf':
-            self.clf_ = RandomForestClassifier(n_estimators=n_estimators,
-                                               max_depth=max_depth)
-        self.clf_.fit(train_X, train_y)
-        pred = self.clf_.predict(test_X)
-        print(
-            classification_report(
-                test_y,
-                pred,
-                target_names=[
-                    'Safe',
-                    'Suspect']))
+              model='svm', C=1000, gamma=0.001, **kwargs):
+        self.param_name = ''
+        super().fit_X(train_X, train_y, test_X, test_y,
+                      model=model, C=C, gamma=gamma, **kwargs)

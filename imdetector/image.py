@@ -1,6 +1,7 @@
 import os
 
 import cv2 as cv
+import numpy as np
 
 
 class SuspiciousImage:
@@ -31,12 +32,23 @@ class SuspiciousImage:
             _, self.mat = gif.read()
         else:
             self.mat = cv.imread(self.path)
+        if self.mat is None:
+            print("ERROR: No such image file.")
+            return self
 
         # Convert to Gray image
         self.gray = cv.cvtColor(self.mat, cv.COLOR_BGR2GRAY)
 
+        self.laplacian()
         self.keypoint()
 
+        return self
+
+    def laplacian(self):
+        self.lap = abs(cv.filter2D(
+            self.gray, -1, np.array([[1, 1, 1],
+                                     [1, -8, 1],
+                                     [1, 1, 1]], np.float32), delta=100).astype('int') - 100)
         return self
 
     def keypoint(self):
