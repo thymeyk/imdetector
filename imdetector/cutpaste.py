@@ -42,6 +42,11 @@ class DWTFeatureExtractor(BaseFeatureExtractor):
         return W
 
     @staticmethod
+    def transition_count(A, B, i, j):
+        sd = np.sum()
+
+    # TODO: modify formula
+    @staticmethod
     def transition_probability(matrix):
         Wk, Dhk, Dvk, t = matrix
         Mhh = [0 if i == 0
@@ -56,8 +61,8 @@ class DWTFeatureExtractor(BaseFeatureExtractor):
                for i in range(-t, t + 1) for j in range(-t, t + 1)]
         Mvh = [0 if i == 0
                else max(0,
-                        np.sum((Dhk[:, :-1] == i) & (np.diff(Dhk, axis=1) == (j - i)))
-                        / np.sum(Dhk[:, :-1] == i))
+                        np.sum((Dvk[:-1, :] == i) & (np.diff(Dvk, axis=1) == (j - i)))
+                        / np.sum(Dvk[:-1, :] == i))
                for i in range(-t, t + 1) for j in range(-t, t + 1)]
         Mvv = [0 if i == 0
                else max(0,
@@ -72,6 +77,10 @@ class DWTFeatureExtractor(BaseFeatureExtractor):
         :return: X, feature matrix of suspect image(s)
         :rtype: np.ndarray
         """
+
+        if img.shape[0] < 8 or img.shape[1] < 8:
+            print("Too small image")
+            return [0] * (52 * (self.t * 2 + 1)**2)
 
         # 1. Take one color channel
         if 3 <= self.channel < 6:
@@ -162,10 +171,10 @@ class CutPaste(BaseDetectorMachine):
     feature_extractor : FeatureExtractor class, (default=DWTFeatureExtractor)
     model_name : str,
         Path to trained model.
+    trainable : bool, (default=False)
 
     Attributes
     ----------
-    clf_ : classifier,
     proba_ : array-like, shape (n_samples,)
     """
 
@@ -174,8 +183,9 @@ class CutPaste(BaseDetectorMachine):
             feature_extractor=DWTFeatureExtractor,
             model_name='./model/cutpaste_svm_yrc_200.sav',
             param_name='./model/cutpaste_svm_yrc_200.sav-param.npz',
+            trainable=False,
             flags=DrawFlags.SHOW_RESULT):
-        super().__init__(feature_extractor, model_name, flags)
+        super().__init__(feature_extractor, model_name, trainable, flags)
         self.param_name = param_name
 
     def detect(self, img):
@@ -191,10 +201,10 @@ class CutPaste(BaseDetectorMachine):
             support = dictionary['support']
             X = X[:, support]
 
-        pred = self.clf_.predict(X)
+        pred = self.clf.predict(X)
 
         if self.flags == DrawFlags.SHOW_RESULT or self.flags == DrawFlags.SHOW_FULL_RESULT:
-            self.proba_ = self.clf_.predict_proba(X)[:, 1]
+            self.proba_ = self.clf.predict_proba(X)[:, 1]
 
         return pred
 

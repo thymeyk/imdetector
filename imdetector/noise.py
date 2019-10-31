@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+import matplotlib.pyplot as plt
 
 from imdetector.image import SuspiciousImage
 from imdetector.base import BaseDetectorMachine, BaseFeatureExtractor, DrawFlags
@@ -54,10 +55,13 @@ class Noise(BaseDetectorMachine):
     feature_extractor : FeatureExtractor class, (default=NoiseFeatureExtractor)
     model_name : str,
         Path to trained model.
+    trainable : bool, (default=False)
+    size : int, (default=256)
+        Length of one side of image.
+    color : Tuple[int, int, int], (default=(0,255,255))
 
     Attributes
     ----------
-    clf_ : classifier,
     dist_ : array-like, shape (n_samples,)
         Signed distance to the separating hyperplane.
     """
@@ -66,23 +70,41 @@ class Noise(BaseDetectorMachine):
             self,
             feature_extractor=NoiseFeatureExtractor,
             model_name='./model/noise_oneclass_42.sav',
+            trainable=False,
+            size=256,
+            color=(0, 255, 255),
             flags=DrawFlags.SHOW_RESULT):
-        super().__init__(feature_extractor, model_name, flags)
+        super().__init__(feature_extractor, model_name, trainable, flags)
+        self.size = size
+        self.color = color
 
-    def detect(self, img):
+    def detect(self, imgs):
         """
-        :param img:
+        :param imgs: list of SuspiciousImage
         :return: Suspect(1) or not(0)
         :rtype: int
         """
+        self.image_ = []
 
-        X = super().detect(img)
+        X = super().detect(imgs)
 
-        pred = self.clf_.predict(X)
+        pred = self.clf.predict(X)
         pred = np.where(pred == -1, 0, pred)
 
         if self.flags == DrawFlags.SHOW_RESULT or self.flags == DrawFlags.SHOW_FULL_RESULT:
-            self.dist_ = self.clf_.decision_function(X)
+            self.dist_ = self.clf.decision_function(X)
+
+            for i, p in enumerate(pred):
+                img = imgs[i]
+                img_noise = np.where(img.lap > 4, 4, img.lap) / 4 * 255
+                img_noise = (255 - img_noise)
+                img_noise = cv.cvtColor(
+                    img_noise.astype('uint8'), cv.COLOR_GRAY2BGR)
+                if p:
+                    img_noise = cv.rectangle(
+                        img_noise, (0, 0), img.gray.T.shape, self.color, thickness=5)
+                self.image_.append(img_noise)
+                plt.close()
 
         return pred
 

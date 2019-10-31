@@ -7,11 +7,13 @@ import numpy as np
 class SuspiciousImage:
     def __init__(self,
                  path=None, hist_eq=True,
-                 algorithm='orb', nfeatures=5000):
+                 algorithm='orb', nfeatures=5000,
+                 dsize=256):
         self.path = path
         self.hist_eq = hist_eq
         self.algorithm = algorithm
         self.nfeatures = nfeatures
+        self.dsize = dsize
 
         self.mat = None
         self.gray = None
@@ -44,11 +46,20 @@ class SuspiciousImage:
 
         return self
 
+    def make_flip(self, imgarr, name):
+        self.name = name
+        self.mat = cv.flip(imgarr, 1)
+        self.gray = cv.cvtColor(self.mat, cv.COLOR_BGR2GRAY)
+        self.laplacian()
+        self.keypoint()
+        return self
+
     def laplacian(self):
         self.lap = abs(cv.filter2D(
-            self.gray, -1, np.array([[1, 1, 1],
-                                     [1, -8, 1],
-                                     [1, 1, 1]], np.float32), delta=100).astype('int') - 100)
+            self.gray, -1,
+            np.array([[1, 1, 1],
+                      [1, -8, 1],
+                      [1, 1, 1]], np.float32), delta=100).astype('int') - 100)
         return self
 
     def keypoint(self):

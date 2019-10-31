@@ -45,6 +45,8 @@ class Duplication(BaseDetector):
         :return: Suspect(1) or not(0)
         :rtype: int
         """
+        self.mask_ratio_ = 0
+        self.image_ = None
 
         if len(img1.kp) < 2 or len(img2.kp) < 2:
             return 0
@@ -57,7 +59,7 @@ class Duplication(BaseDetector):
             self.matches_ = self.ratio_test(matches)
 
         self.find_homography(img1, img2)
-        result = 1 if hasattr(self, 'mask_') else 0
+        result = 1 if self.mask_ratio_ > 0 else 0
 
         return result
 
@@ -96,7 +98,9 @@ class Duplication(BaseDetector):
             matches_mask = self.mask_.ravel().tolist()
 
             # キーポイントのうちminKey以上を含むならマスクを採用（＝DETECT!）
-            if matches_mask.count(1) / len(matches_mask) >= self.min_key:
+            mask_ratio = matches_mask.count(1) / len(matches_mask)
+            if mask_ratio >= self.min_key:
+                self.mask_ratio_ = mask_ratio
                 if self.flags != DrawFlags.RETURN_RESULT:
                     self.draw_match(img1, img2, src_pts)
         return self
@@ -122,7 +126,8 @@ class Duplication(BaseDetector):
                                  lineType=cv.LINE_AA)  # LINE_AA:アンチエイリアス
 
         if self.flags == DrawFlags.SHOW_RESULT:
-            img1_name, img2_name = img1.name.split('/')[-1], img2.name.split('/')[-1]
+            img1_name = img1.name.replace('-', '\n-', 1)
+            img2_name = img2.name.replace('-', '\n-', 1)
 
             fig = plt.figure()
             ax1 = fig.add_subplot(121)
@@ -149,7 +154,13 @@ class Duplication(BaseDetector):
                                matchesMask=self.mask_.ravel().tolist(),  # draw only inliers
                                flags=2)
             self.image_ = cv.drawMatches(
-                img1_rect, img1.kp, img2_rect, img2.kp, self.matches_, None, **draw_params)
+                img1_rect,
+                img1.kp,
+                img2_rect,
+                img2.kp,
+                self.matches_,
+                None,
+                **draw_params)
 
         return self
 
@@ -173,6 +184,7 @@ class CopyMove(Duplication):
     matches_ : list[cv.DMatch],
     mask_ : array,
     M_ : array,
+    mask_ratio_ : float,
     image_ : array,
     """
 
@@ -180,7 +192,16 @@ class CopyMove(Duplication):
                  r=0.60, min_dis=40, min_match=5, min_key=0.5,
                  ransacT=5.0, crossCheck=False, color=(0, 255, 255),
                  flags=DrawFlags.SHOW_RESULT):
-        super(CopyMove, self).__init__(r, min_match, min_key, ransacT, crossCheck, color, flags)
+        super(
+            CopyMove,
+            self).__init__(
+            r,
+            min_match,
+            min_key,
+            ransacT,
+            crossCheck,
+            color,
+            flags)
         self.min_dis = min_dis
 
     def detect(self, img1, img2=None):
@@ -189,6 +210,9 @@ class CopyMove(Duplication):
         :return: Suspect(1) or not(0)
         :rtype: int
         """
+        self.mask_ratio_ = 0
+        self.image_ = None
+
         if len(img1.kp) < 3:
             return 0
 
@@ -198,7 +222,8 @@ class CopyMove(Duplication):
         matches2 = []
         for m in matches3:
             if len(m) > 1:
-                m = [mi for mi in m if img1.kp[mi.queryIdx] != img1.kp[mi.trainIdx]]
+                m = [mi for mi in m if img1.kp[mi.queryIdx]
+                     != img1.kp[mi.trainIdx]]
                 if len(m) > 1:
                     matches2.append([m[0], m[1]])
             else:
@@ -208,7 +233,7 @@ class CopyMove(Duplication):
         self.matches_ = self.distance_cutoff(img1.kp, good)
 
         self.find_homography(img1)
-        result = 1 if hasattr(self, 'mask_') else 0
+        result = 1 if self.mask_ratio_ > 0 else 0
 
         return result
 
@@ -223,11 +248,8 @@ class CopyMove(Duplication):
         for m in matches:
             if kp[m.queryIdx].pt < kp[m.trainIdx].pt:
                 m.queryIdx, m.trainIdx = m.trainIdx, m.queryIdx
-        better = [
-            m
-            for m in matches
-            if (np.linalg.norm(np.array(kp[m.queryIdx].pt) - np.array(kp[m.trainIdx].pt)) > self.min_dis)
-        ]
+        better = [m for m in matches if (np.linalg.norm(
+            np.array(kp[m.queryIdx].pt) - np.array(kp[m.trainIdx].pt)) > self.min_dis)]
         return better
 
     def find_homography(self, img1, img2=None):
@@ -243,8 +265,12 @@ class CopyMove(Duplication):
                          ).reshape(-1, 1, 2)
         dst = cv.perspectiveTransform(pts, self.M_)
 
-        self.image_ = cv.polylines(img_rect, [np.int32(dst)], isClosed=True,
-                                   color=self.color, thickness=3, lineType=cv.LINE_AA)
+        self.image_ = cv.polylines(img_rect,
+                                   [np.int32(dst)],
+                                   isClosed=True,
+                                   color=self.color,
+                                   thickness=3,
+                                   lineType=cv.LINE_AA)
 
         if self.flags == DrawFlags.SHOW_FULL_RESULT:
             for m in self.matches_:

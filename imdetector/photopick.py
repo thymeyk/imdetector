@@ -2,7 +2,6 @@ import cv2 as cv
 import numpy as np
 from sklearn.feature_extraction.image import extract_patches_2d
 
-from imdetector.image import SuspiciousImage
 from imdetector.base import BaseDetectorMachine, BaseFeatureExtractor, DrawFlags
 
 
@@ -12,10 +11,10 @@ class DictionaryFeatureExtractor(BaseFeatureExtractor):
 
     Parameters
     ----------
-    size : int, (default=256)
+    size : int, (default=128)
         Length of one side of image.
-    t : int, (default=4)
-        Truncation threshold.
+    block_size : int, (default=6)
+        Length of one side of dictionary patch.
     """
 
     def __init__(self, param_name, size=128, block_size=6):
@@ -130,6 +129,47 @@ class DictionaryFeatureExtractor(BaseFeatureExtractor):
         return XCs
 
 
+class LaplacianFeatureExtractor(BaseFeatureExtractor):
+    """
+    Parameters
+    ----------
+    size : int, (default=256)
+        Length of one side of image.
+    block_size : int, (default=6)
+        Length of one side of dictionary patch.
+    """
+
+    def __init__(self, size=256, **kwargs):
+        self.size = size
+
+    def extract(self, imgs):
+        """
+        :param list imgs: suspicious image(s)
+        :return: X, feature vector of suspect image
+        :rtype: np.ndarray
+        """
+
+        dsize = self.size
+        X = np.stack(
+            [self.feature(cv.resize(i.gray, dsize=(dsize, dsize))) for i in imgs])
+
+        return X
+
+    def feature(self, img):
+        """
+        :param np.ndarray img: suspicious image (BGR)
+        :return: X, array of feature vector of suspect image
+        :rtype: np.ndarray
+        """
+        lap = cv.filter2D(
+            img, -1, np.array([[1, 1, 1],
+                               [1, -8, 1],
+                               [1, 1, 1]], np.float32), delta=100).astype('int') - 100
+        lap = lap.flatten()
+        lap = lap / np.max(lap) if np.max(lap) != 0 else lap
+        return lap
+
+
 class PhotoPick(BaseDetectorMachine):
     """
     Parameters
@@ -137,12 +177,7 @@ class PhotoPick(BaseDetectorMachine):
     feature_extractor : FeatureExtractor class, (default=NoiseFeatureExtractor)
     model_name : str,
         Path to trained model.
-
-    Attributes
-    ----------
-    clf_ : classifier,
-    dist_ : array-like, shape (n_samples,)
-        Signed distance to the separating hyperplane.
+    trainable : bool, (default=False)
     """
 
     def __init__(
@@ -150,8 +185,14 @@ class PhotoPick(BaseDetectorMachine):
             feature_extractor=DictionaryFeatureExtractor,
             model_name='./model/photopicker_rf_lee_2700.sav',
             param_name='./model/photopicker_rf_lee_2700.sav-param.npz',
-            flags=DrawFlags.SHOW_RESULT):
-        super().__init__(feature_extractor, model_name, flags, param_name=param_name)
+            trainable=False,
+            flags=DrawFlags.RETURN_RESULT):
+        super().__init__(
+            feature_extractor,
+            model_name,
+            trainable,
+            flags,
+            param_name=param_name)
 
     def detect(self, imgs):
         """
@@ -162,7 +203,7 @@ class PhotoPick(BaseDetectorMachine):
 
         X = super().detect(imgs)
 
-        pred = self.clf_.predict(X)
+        pred = self.clf.predict(X)
         pred = np.where(pred == -1, 0, pred)
 
         return pred

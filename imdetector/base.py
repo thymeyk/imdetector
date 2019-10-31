@@ -8,8 +8,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 from sklearn.svm import SVC, OneClassSVM
 
-from imdetector.image import SuspiciousImage
-
 
 class Color(IntEnum):
     B = 0
@@ -84,11 +82,14 @@ class BaseDetectorMachine(BaseDetector):
     def __init__(self,
                  feature_extractor,
                  model_name,
+                 trainable=False,
                  flags=DrawFlags.SHOW_RESULT,
                  **kwargs):
         self.feature_extractor = feature_extractor(**kwargs)
         self.model_name = model_name
         self.flags = flags
+        if not trainable:
+            self.clf = joblib.load(self.model_name)
 
     def detect(self, imgs):
         """
@@ -97,18 +98,12 @@ class BaseDetectorMachine(BaseDetector):
         :rtype: int
         """
 
-        if not hasattr(self, 'clf_'):
-            self.clf_ = joblib.load(self.model_name)
-
         if isinstance(imgs, list):
             # X = np.stack([self.feature_extractor.extract(i) for i in imgs])
             X = self.feature_extractor.extract(imgs)
             return X
         else:
             print("ERROR: unsupported input type")
-
-    def load_model(self, model_name):
-        self.clf_ = joblib.load(model_name)
 
     def fit_img(self, train_img, train_y, test_img, test_y,
                 model, C, gamma, nu, n_estimators, max_depth):
@@ -122,16 +117,16 @@ class BaseDetectorMachine(BaseDetector):
         if model == 'svm':
             probability = (self.flags == DrawFlags.SHOW_RESULT
                            or self.flags == DrawFlags.SHOW_FULL_RESULT)
-            self.clf_ = SVC(C=C,
-                            gamma=gamma,
-                            probability=probability)
+            self.clf = SVC(C=C,
+                           gamma=gamma,
+                           probability=probability)
         elif model == 'onesvm':
-            self.clf_ = OneClassSVM(gamma=gamma, nu=nu)
+            self.clf = OneClassSVM(gamma=gamma, nu=nu)
         elif model == 'rf':
-            self.clf_ = RandomForestClassifier(n_estimators=n_estimators,
-                                               max_depth=max_depth)
-        self.clf_.fit(train_X, train_y)
-        pred = self.clf_.predict(test_X)
+            self.clf = RandomForestClassifier(n_estimators=n_estimators,
+                                              max_depth=max_depth)
+        self.clf.fit(train_X, train_y)
+        pred = self.clf.predict(test_X)
         print(
             classification_report(
                 test_y,
@@ -139,6 +134,14 @@ class BaseDetectorMachine(BaseDetector):
                 target_names=[
                     'Safe',
                     'Suspect']))
+
+    def save_images(self, file_names):
+        if hasattr(self, 'image_') and self.image_ is not None:
+            [cv.imwrite(file_name, image_)
+             for file_name, image_ in zip(file_names, self.image_)]
+        else:
+            print(self, 'Error: There is no result image.')
+        return self
 
 
 class BaseFeatureExtractor:
@@ -149,19 +152,9 @@ class BaseFeatureExtractor:
         :rtype: np.ndarray
         """
 
-        X = np.stack([self.feature(i.mat) for i in imgs])
+        X = np.stack([self.feature(i.mat[8:-8, 8:-8, :]) for i in imgs])
 
         return X
-
-    # def one_by_one(self, img):
-    #     if isinstance(img, SuspiciousImage):
-    #         X = np.array(self.feature(img.mat))
-    #     elif isinstance(img, np.ndarray):
-    #         X = np.array(self.feature(img))
-    #     else:
-    #         print("ERROR: unsupported input type")
-    #         return 0
-    #     return X
 
     def feature(self, img):
         """
@@ -169,6 +162,7 @@ class BaseFeatureExtractor:
         :return: X, feature matrix of suspect image(s)
         :rtype: np.ndarray
         """
+        return img
 
     def save_features(self, img, file_name):
         X = self.extract(img)
