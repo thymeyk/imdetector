@@ -42,32 +42,30 @@ class DWTFeatureExtractor(BaseFeatureExtractor):
         return W
 
     @staticmethod
-    def transition_count(A, B, i, j):
-        sd = np.sum()
+    def cond_probability(A, B, i, j):
+        """
+        :param np.ndarray A:
+        :param np.ndarray B:
+        :param int i:
+        :param int j:
+        :return:
+        """
+        denominator = np.sum(A == i)
+        if denominator == 0:
+            return 0
+        numerator = np.sum((A == i) & (B == j))
+        return numerator / denominator
 
-    # TODO: modify formula
-    @staticmethod
-    def transition_probability(matrix):
-        Wk, Dhk, Dvk, t = matrix
-        Mhh = [0 if i == 0
-               else max(0,
-                        np.sum((Dhk[:-1, :] == i) & (np.diff(Dhk, axis=0) == (j - i)))
-                        / np.sum(Dhk[:-1, :] == i))
+    def transition_probability(self, matrix):
+        Wk, Dhk, Dvk = matrix
+        t = self.t
+        Mhh = [self.cond_probability(Dhk[:-1, :], np.diff(Dhk, axis=0), i, j - i)
                for i in range(-t, t + 1) for j in range(-t, t + 1)]
-        Mhv = [0 if i == 0
-               else max(0,
-                        np.sum((Dhk[:, :-1] == i) & (np.diff(Dhk, axis=1) == (j - i)))
-                        / np.sum(Dhk[:, :-1] == i))
+        Mhv = [self.cond_probability(Dhk[:, :-1], np.diff(Dhk, axis=1), i, j - i)
                for i in range(-t, t + 1) for j in range(-t, t + 1)]
-        Mvh = [0 if i == 0
-               else max(0,
-                        np.sum((Dvk[:-1, :] == i) & (np.diff(Dvk, axis=1) == (j - i)))
-                        / np.sum(Dvk[:-1, :] == i))
+        Mvh = [self.cond_probability(Dvk[:-1, :], np.diff(Dvk, axis=0), i, j - i)
                for i in range(-t, t + 1) for j in range(-t, t + 1)]
-        Mvv = [0 if i == 0
-               else max(0,
-                        np.sum((Dvk[:, :-1] == i) & (np.diff(Dvk, axis=1) == (j - i)))
-                        / np.sum(Dvk[:, :-1] == i))
+        Mvv = [self.cond_probability(Dvk[:, :-1], np.diff(Dvk, axis=1), i, j - i)
                for i in range(-t, t + 1) for j in range(-t, t + 1)]
         return Mhh + Mhv + Mvh + Mvv
 
@@ -113,7 +111,7 @@ class DWTFeatureExtractor(BaseFeatureExtractor):
         # matrices
         p = Pool(self.n_jobs)
         M = p.map(self.transition_probability,
-                  [[W[k], Dh[k], Dv[k], self.t] for k in range(13)])
+                  [[W[k], Dh[k], Dv[k]] for k in range(13)])
         p.close()
 
         X = list(chain.from_iterable(M))
