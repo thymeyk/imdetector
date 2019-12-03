@@ -9,9 +9,10 @@ class Duplication(BaseDetector):
     """
     Parameters
     ----------
+    min_kp : int,
     r : float, (default=0.60)
     min_match : int, (default=5)
-    min_key : float, (default=0.5)
+    min_key_ratio : float, (default=0.75)
     ransacT : float, (default=5.0)
     crossCheck : bool, (default=False)
     color : Tuple[int, int, int], (default=(0,255,255))
@@ -26,13 +27,20 @@ class Duplication(BaseDetector):
     image_ : array,
     """
 
-    def __init__(self,
-                 r=0.60, min_match=5, min_key=0.5, ransacT=5.0,
-                 crossCheck=False, color=(0, 255, 255),
-                 flags=DrawFlags.SHOW_RESULT):
+    def __init__(
+            self,
+            min_kp=20,
+            r=0.60,
+            min_match=20,
+            min_key_ratio=0.75,
+            ransacT=5.0,
+            crossCheck=False,
+            color=(0, 255, 255),
+            flags=DrawFlags.SHOW_RESULT):
+        self.min_kp = min_kp
         self.r = r
         self.min_match = min_match
-        self.min_key = min_key
+        self.min_key_ratio = min_key_ratio
         self.ransacT = ransacT
         self.crossCheck = crossCheck
         self.color = color
@@ -48,8 +56,8 @@ class Duplication(BaseDetector):
         self.mask_ratio_ = 0
         self.image_ = None
 
-        if len(img1.kp) < 2 or len(img2.kp) < 2:
-            return 0
+        if len(img1.kp) < self.min_kp or len(img2.kp) < self.min_kp:
+            return -1
 
         if self.crossCheck:
             bf = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
@@ -99,7 +107,7 @@ class Duplication(BaseDetector):
 
             # キーポイントのうちminKey以上を含むならマスクを採用（＝DETECT!）
             mask_ratio = matches_mask.count(1) / len(matches_mask)
-            if mask_ratio >= self.min_key:
+            if mask_ratio >= self.min_key_ratio:
                 self.mask_ratio_ = mask_ratio
                 if self.flags != DrawFlags.RETURN_RESULT:
                     self.draw_match(img1, img2, src_pts)
@@ -112,16 +120,17 @@ class Duplication(BaseDetector):
         :param np.ndarray src_pts: array of coordinates of keypoints
         """
 
+        gap = img1.gap
         x, y, w, h = cv.boundingRect(
             np.float32(src_pts)[self.mask_.ravel() == 1])
         img1_rect = cv.rectangle(
-            img1.mat.copy(), (x, y), (x + w, y + h), self.color, 2)
+            img1.mat.copy(), (x - gap, y - gap), (x + w - gap, y + h - gap), self.color, 2)
 
         pts = np.float32([[x, y], [x, y + h], [x + w, y + h], [x + w, y]]
                          ).reshape(-1, 1, 2)
         dst = cv.perspectiveTransform(pts, self.M_)
 
-        img2_rect = cv.polylines(img2.mat.copy(), [np.int32(dst)],
+        img2_rect = cv.polylines(img2.mat.copy(), [np.int32(dst) - gap],
                                  isClosed=True, color=self.color, thickness=3,
                                  lineType=cv.LINE_AA)  # LINE_AA:アンチエイリアス
 
@@ -154,9 +163,9 @@ class Duplication(BaseDetector):
                                matchesMask=self.mask_.ravel().tolist(),  # draw only inliers
                                flags=2)
             self.image_ = cv.drawMatches(
-                img1_rect,
+                img1.keyimg.copy(),
                 img1.kp,
-                img2_rect,
+                img2.keyimg.copy(),
                 img2.kp,
                 self.matches_,
                 None,
@@ -169,10 +178,11 @@ class CopyMove(Duplication):
     """
     Parameters
     ----------
+    min_kp : int,
     r : float, (default=0.60)
     min_dis : int, (default=40)
     min_match : int, (default=5)
-    min_key : float, (default=0.5)
+    min_key_ratio : float, (default=0.5)
     ransacT : float, (default=5.0)
     crossCheck : bool, (default=False)
     color : Tuple[int, int, int], (default=(0,255,255))
@@ -188,16 +198,24 @@ class CopyMove(Duplication):
     image_ : array,
     """
 
-    def __init__(self,
-                 r=0.60, min_dis=40, min_match=5, min_key=0.5,
-                 ransacT=5.0, crossCheck=False, color=(0, 255, 255),
-                 flags=DrawFlags.SHOW_RESULT):
+    def __init__(
+            self,
+            min_kp=20,
+            r=0.60,
+            min_dis=40,
+            min_match=20,
+            min_key_ratio=0.75,
+            ransacT=5.0,
+            crossCheck=False,
+            color=(0, 255, 255),
+            flags=DrawFlags.SHOW_RESULT):
         super(
             CopyMove,
             self).__init__(
+            min_kp,
             r,
             min_match,
-            min_key,
+            min_key_ratio,
             ransacT,
             crossCheck,
             color,
@@ -213,8 +231,8 @@ class CopyMove(Duplication):
         self.mask_ratio_ = 0
         self.image_ = None
 
-        if len(img1.kp) < 3:
-            return 0
+        if len(img1.kp) < self.min_kp:
+            return -1
 
         matches3 = img1.bf.knnMatch(img1.des, img1.des, k=3)
 

@@ -22,6 +22,7 @@ cython = "*"
 pandas = "*"
 numba = "*"
 pywt = "*"
+django = "*"
 
 [requires]
 python_version = "3.7"

@@ -91,9 +91,10 @@ class Noise(BaseDetectorMachine):
         pred = self.clf.predict(X)
         pred = np.where(pred == -1, 0, pred)
 
-        if self.flags == DrawFlags.SHOW_RESULT or self.flags == DrawFlags.SHOW_FULL_RESULT:
+        if self.flags != DrawFlags.RETURN_RESULT:
             self.dist_ = self.clf.decision_function(X)
 
+        if self.flags == DrawFlags.SHOW_FULL_RESULT:
             for i, p in enumerate(pred):
                 img = imgs[i]
                 img_noise = np.where(img.lap > 4, 4, img.lap) / 4 * 255

@@ -1,10 +1,9 @@
 import numpy as np
 import cv2 as cv
 from .base import BaseDetector, DrawFlags
-from .image import SuspiciousImage
 
 
-class PaintOut(BaseDetector):
+class Clipping(BaseDetector):
     """
     Parameters
     ----------
@@ -37,13 +36,15 @@ class PaintOut(BaseDetector):
         self.ratio_ = 0
         self.image_ = None
         self.find_flat_area(img)
-        result = 1 if self.ratio_ > 0 else 0
+        result = 1 if self.ratio_ > 0.001 else 0
         return result
 
     def find_flat_area(self, img):
         lap = img.lap
         lap = np.where(lap < 1, 255, 0).astype('uint8')
         lap = cv.medianBlur(lap, ksize=self.ksize)
+        white = np.where(img.gray == 255, 0, 255).astype('uint8')
+        lap = lap & white
 
         _, contours, hierarchy = cv.findContours(
             lap, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)

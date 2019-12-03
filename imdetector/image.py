@@ -8,23 +8,20 @@ class SuspiciousImage:
     def __init__(self,
                  path=None, hist_eq=True,
                  algorithm='orb', nfeatures=5000,
-                 dsize=256):
+                 dsize=256, gap=32):
         self.path = path
         self.hist_eq = hist_eq
         self.algorithm = algorithm
         self.nfeatures = nfeatures
         self.dsize = dsize
+        self.gap = gap
 
         self.mat = None
         self.gray = None
 
-        self.paintout = 0
-        self.duplication = 0
-        self.copymove = 0
-        self.cutpaste = 0
-
         if path is not None:
-            self.name = os.path.basename(self.path)
+            self.name = os.path.basename(path)
+            self.size = os.path.getsize(path)
             self.read()
 
     def read(self):
@@ -43,6 +40,21 @@ class SuspiciousImage:
 
         self.laplacian()
         self.keypoint()
+
+        self.noise = 0
+        self.no_img = 255 - np.where(self.lap > 4, 4, self.lap) / 4 * 255
+        self.dist = 0
+
+        self.clipping = 0
+        self.cl_img = self.mat
+        self.area_ratio = 0
+
+        self.copymove = -1
+        self.cm_img = self.mat
+        self.mask_ratio = 0
+
+        self.cutpaste = -1
+        self.prob = 0
 
         return self
 
@@ -68,10 +80,18 @@ class SuspiciousImage:
         elif self.gray is None:
             self.gray = cv.cvtColor(self.mat, cv.COLOR_BGR2GRAY)
 
-        self.keyimg = self.gray
+        keyimg = self.gray
 
         if self.hist_eq:
-            self.keyimg = cv.equalizeHist(self.keyimg)
+            keyimg = cv.equalizeHist(keyimg)
+
+        H, W = keyimg.shape
+        gap = self.gap
+        imgzeros = np.full((H + gap * 2, W + gap * 2), 255)
+        for i in range(H):
+            for j in range(W):
+                imgzeros[i + gap, j + gap] = keyimg[i, j]
+        self.keyimg = imgzeros.astype('uint8')
 
         if self.algorithm == 'orb':
             self.detector = cv.ORB_create(nfeatures=self.nfeatures)

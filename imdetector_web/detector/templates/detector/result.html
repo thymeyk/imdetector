@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="my-4">Results</h1>
+    <!--<div class="row">-->
+        <!--{% for r in results %}-->
+            <!--<div class="col-md-12">-->
+                <!--<h3>{{ r.title }}</h3>-->
+                <!--<center>-->
+
+                <!--<a href="#">-->
+                    <!--<img class="img-fluid rounded mb-3 mb-md-0" src="{{ r.result.url }}" alt="">-->
+                <!--</a>-->
+
+                <!--<hr>-->
+                <!--</center>-->
+            <!--</div>-->
+        <!--{% endfor %}-->
+    <!--</div>-->
+<!--</div>-->
+
+
+    {% for r in results %}
+        <div class="row">
+            <div class="col-md-7">
+              <h3>● {{ r.name }}</h3>
+                <br>
+                  <center>
+
+                      <a href="#">
+                        <img class="img-fluid rounded mb-3 mb-md-0" src="{{ r.result.url }}" alt="", width="80%">
+                      </a>
+                  </center>
+                <br>
+            </div>
+
+            <div class="col-md-5">
+                <h3><font color="F5AE00">Suspicious!</font></h3>
+                <h4><p>- {{r.title}}</p></h4>
+              <!--<a class="btn btn-primary" href="#">View Project</a>-->
+            </div>
+        </div>
+        <hr>
+    {% endfor %}
+
+{% endblock %}

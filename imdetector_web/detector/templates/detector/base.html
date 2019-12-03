@@ -1,0 +1,74 @@
+{% load staticfiles %}
+<html lang="en">
+<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" />
+
+	<title>Image Manipulation Detector</title>
+</head>
+
+<body>
+
+<!-- Navigation -->
+{% block navigation %}
+{#<div class="fixed-top">#}
+	<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+		<a class="navbar-brand" href="index">IMDetector</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarColor01">
+			{#          <ul class="navbar-nav mr-auto">#}
+			<ul class="navbar-nav nav-pills">
+				<li class="nav-item {% block nav_home %}{% endblock %}">
+					<a class="nav-link" href="index">Home <span class="sr-only">(current)</span></a>
+				</li>
+				<li class="nav-item {% block nav_about %}{% endblock %}">
+					<a class="nav-link" href="about">About</a>
+				</li>
+	{#			<li class="nav-item dropdown">#}
+	{#				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Documents</a>#}
+	{#				<div class="dropdown-menu" style="">#}
+	{#					<a class="dropdown-item" href="#">Quick Start Guide</a>#}
+	{#					<a class="dropdown-item" href="#">Save report</a>#}
+	{#					<a class="dropdown-item" href="#">Clipping</a>#}
+	{#					<a class="dropdown-item" href="#">Copy-move</a>#}
+	{#					<a class="dropdown-item" href="#">Duplication</a>#}
+	{#					<a class="dropdown-item" href="#">Cut-paste</a>#}
+	{#				</div>#}
+	{#			</li>#}
+				<li class="nav-item {% block nav_download %}{% endblock %}">
+					<a class="nav-link" href="download">Download</a>
+				</li>
+				<li class="nav-item {% block nav_contact %}{% endblock %}">
+					<a class="nav-link" href="contact">Contact</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+{#</div>#}
+{% endblock %}
+
+<div class="container mt-5">
+	{% block banner %}
+		<div class="page-header" id="banner" style="padding-bottom: 20px">
+			<div class="row">
+				<div class="col-lg-12 col-md-12 col-sm-12">
+				<h1>{% block title %}{% endblock %}</h1>
+				<p class="lead">{% block subtitle %}{% endblock %}</p>
+				</div>
+			</div>
+		</div>
+	{% endblock %}
+	{% block content %}
+	{% endblock %}
+</div>
+
+</body>
+</html>

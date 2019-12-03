@@ -1,8 +1,10 @@
 import inspect
+
 import joblib
 import cv2 as cv
 import numpy as np
 from enum import IntEnum
+from multiprocessing import Pool
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
@@ -152,7 +154,12 @@ class BaseFeatureExtractor:
         :rtype: np.ndarray
         """
 
-        X = np.stack([self.feature(i.mat[8:-8, 8:-8, :]) for i in imgs])
+        # X = np.stack([self.feature(i.mat[4:-4, 4:-4, :]) for i in imgs])
+        # X = np.stack([self.feature(i.mat) for i in imgs])
+        p = Pool(self.n_jobs)
+        X = p.map(self.feature, [i.mat for i in imgs])
+        p.close()
+        X = np.stack(X)
 
         return X
 

@@ -25,7 +25,7 @@ class DWTFeatureExtractor(BaseFeatureExtractor):
     n_jobs : int, (default=1)
     """
 
-    def __init__(self, channel=Color.B, block_size=0, t=4, n_jobs=1):
+    def __init__(self, channel=Color.B, block_size=0, t=4, n_jobs=4):
         self.channel = channel
         self.t = t
         self.block_size = block_size
@@ -76,9 +76,10 @@ class DWTFeatureExtractor(BaseFeatureExtractor):
         :rtype: np.ndarray
         """
 
-        if img.shape[0] < 8 or img.shape[1] < 8:
-            print("Too small image")
-            return [0] * (52 * (self.t * 2 + 1)**2)
+        # if img.shape[0] < 8 or img.shape[1] < 8:
+        #     print("Too small image")
+        #     return [0] * (52 * (self.t * 2 + 1)**2)
+        # print(img.shape)
 
         # 1. Take one color channel
         if 3 <= self.channel < 6:
@@ -109,10 +110,8 @@ class DWTFeatureExtractor(BaseFeatureExtractor):
 
         # 4. Calculate the horizontal and vertical transition probability
         # matrices
-        p = Pool(self.n_jobs)
-        M = p.map(self.transition_probability,
-                  [[W[k], Dh[k], Dv[k]] for k in range(13)])
-        p.close()
+        M = [self.transition_probability(
+            [W[k], Dh[k], Dv[k]]) for k in range(13)]
 
         X = list(chain.from_iterable(M))
 

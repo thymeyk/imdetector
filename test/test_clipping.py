@@ -2,16 +2,16 @@ import os
 import unittest
 
 from imdetector.image import SuspiciousImage
-from imdetector.paintout import PaintOut
+from imdetector.clipping import Clipping
 
 DIR = os.getcwd()
 
 
-class TestPaintOut(unittest.TestCase):
+class TestClipping(unittest.TestCase):
     def test_paintout1(self):
         expected = 1
         img1 = SuspiciousImage(os.path.join(DIR, 'test/image/yrc_5_po.png'))
-        detector = PaintOut()
+        detector = Clipping()
         actual = detector.detect(img1)
         detector.save_image(
             os.path.join(
@@ -21,7 +21,7 @@ class TestPaintOut(unittest.TestCase):
     def test_paintout0(self):
         expected = 0
         img1 = SuspiciousImage(os.path.join(DIR, 'test/image/yrc_16.png'))
-        detector = PaintOut()
+        detector = Clipping()
         actual = detector.detect(img1)
         self.assertEqual(expected, actual)
 
