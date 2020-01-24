@@ -5,6 +5,7 @@ IMDetector is a Python module for image manipulation detection.
 We are also developing a web application platform.
 
 [Short demo V0](https://youtu.be/3m_Hl_Dkfg8) (Youtube movie)
+
 [![Short demo](http://img.youtube.com/vi/3m_Hl_Dkfg8/0.jpg)](http://www.youtube.com/watch?v=3m_Hl_Dkfg8)
 
 ### *IMDetector* 生命科学における画像不正自動検出ツール
