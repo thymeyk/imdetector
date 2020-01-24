@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block nav_detection %}active{% endblock %}
+{% block title %}{% endblock %}
+{% block subtitle %}{% endblock %}
+{% block lead %}{% endblock %}
+
+{% block content %}
+	<meta http-equiv="refresh" content="0.5;result">
+	<div class="bs-docs-section" style="padding: auto">
+		<div class="row">
+			{% load static %}
+			<p><img src="{% static "detector/Loading.gif" %}"></p>
+			<p> Screening {{ len }} imamges ...</p>
+		</div>
+	</div>
+{% endblock %}

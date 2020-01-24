@@ -20,9 +20,9 @@ def delete_previous_file(function):
         self = args[0]
 
         # 保存前のファイル名を取得
-        result = Photo.objects.filter(pk=self.pk)
+        result = Suspicious.objects.filter(pk=self.pk)
         previous = result[0] if len(result) else None
-        super(Photo, self).save()
+        super(Suspicious, self).save()
 
         # 関数実行
         result = function(*args, **kwargs)
@@ -43,7 +43,7 @@ class File(models.Model):
     zip = models.FileField(upload_to='files/')
 
 
-class Photo(models.Model):
+class Suspicious(models.Model):
     @delete_previous_file
     def save(
             self,
@@ -51,15 +51,37 @@ class Photo(models.Model):
             force_update=False,
             using=None,
             update_fields=None):
-        super(Photo, self).save()
+        super(Suspicious, self).save()
 
     @delete_previous_file
     def delete(self, using=None, keep_parents=False):
-        super(Photo, self).delete()
+        super(Suspicious, self).delete()
+
+    post_id = models.IntegerField(null=True, default=0)
 
     name = models.CharField(max_length=256, null=True)
-    title = models.CharField(max_length=256, null=True)
-    paintout = models.ImageField(upload_to='results/')
+    size = models.IntegerField(null=True, default=0)
+    original = models.ImageField(upload_to='results/{}/'.format(post_id))
+
+    noise = models.IntegerField(null=True, default=0)
+    no_img = models.ImageField(upload_to='results/{}/'.format(post_id))
+
+    clipping = models.IntegerField(null=True, default=0)
+    cl_img = models.ImageField(upload_to='results/{}/'.format(post_id))
     area_ratio = models.IntegerField(null=True, default=0)
-    copymove = models.ImageField(upload_to='results/')
+
+    copymove = models.IntegerField(null=True, default=-1)
+    cm_img = models.ImageField(upload_to='results/{}/'.format(post_id))
+    mask_ratio = models.IntegerField(null=True, default=0)
+
+    cutpaste = models.IntegerField(null=True, default=-1)
+    cp_img = models.ImageField(upload_to='results/{}/'.format(post_id))
+    prob = models.IntegerField(null=True, default=0)
+
+
+class SuspiciousDuplication(models.Model):
+    post_id = models.IntegerField(null=True, default=0)
+    name1 = models.CharField(max_length=256, null=True)
+    name2 = models.CharField(max_length=256, null=True)
+    du_img = models.ImageField(upload_to='results/{}/'.format(post_id))
     mask_ratio = models.IntegerField(null=True, default=0)

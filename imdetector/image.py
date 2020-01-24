@@ -36,10 +36,13 @@ class SuspiciousImage:
             return self
 
         # Convert to Gray image
-        self.gray = cv.cvtColor(self.mat, cv.COLOR_BGR2GRAY)
+        if len(self.mat.shape) is 3:
+            self.gray = cv.cvtColor(self.mat, cv.COLOR_BGR2GRAY)
+        elif len(self.mat.shape) is 2:
+            self.gray = self.mat
 
-        self.laplacian()
         self.keypoint()
+        self.laplacian()
 
         self.noise = 0
         self.no_img = 255 - np.where(self.lap > 4, 4, self.lap) / 4 * 255

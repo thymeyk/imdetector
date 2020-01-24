@@ -69,7 +69,7 @@ def plot_report(img, len_sus, i, PMCID, SAVE_DIR):
     fig.suptitle('{}: {}/{}'.format(PMCID, i + 1, len_sus),
                  fontweight='bold', fontsize=12, y=1.02)
 
-    # Input immage #
+    # Input image #
     ax = fig.add_subplot(521)
     ax.set_title('Input image')
     ax.imshow(cv.cvtColor(img.mat, cv.COLOR_BGR2RGB), aspect="equal")
@@ -346,15 +346,15 @@ def detection(
             imgname = img.name
             for j in range(i + 1, len_sus):
                 pred = detector_du.detect(
-                    img, suspicious_images[j])
+                    suspicious_images[j], img)
                 report.loc[imgname, 'Duplication'] += pred
                 if pred is 1:
                     file_name = os.path.join(
                         OUT_DIR, '{}_{}_duplication.jpg'.format(
-                            imgname, suspicious_images[j].name))
+                            suspicious_images[j].name, imgname))
                     detector_du.save_image(file_name)
                     result_imgnames.append(
-                        [imgname, suspicious_images[j].name])
+                        [suspicious_images[j].name, imgname])
                     result_imgarrs.append(detector_du.image_)
                     result_ratios.append(detector_du.mask_ratio_)
 
@@ -419,27 +419,27 @@ if __name__ == "__main__":
     DIR = '/Volumes/data-yuki/retraction_watch/190722/'
     start = time.time()
 
-    # REPORT_DIR = "/Volumes/data-yuki/retraction_watch/190722/retracted_report/"
+    # REPORT_DIR = "/Volumes/data-yuki/retraction_watch/190722/retracted_report_duplication/"
     # PMC_DIRs = sorted(glob.glob(os.path.join(DIR, 'retracted', 'PMC*')))
     # detection(MODEL_DIR, REPORT_DIR, PMC_DIRs, 'retracted259.csv')
 
-    REPORT_DIR = DIR + 'negative_report'
+    REPORT_DIR = DIR + 'negative2_report'
     PMC_DIRs = sorted(
         glob.glob(
             os.path.join(
                 DIR,
-                'negative',
+                'negative2',
                 'PMC*')))
-    # # PMC_DIRs = [DIR + 'negative/PMC419710',
-    # #             DIR + 'negative/PMC1828703',
-    # #             DIR + 'negative/PMC2447896',
-    # #             DIR + 'negative/PMC3538858',
-    # #             DIR + 'negative/PMC3885421',
-    # #             DIR + 'negative/PMC3900932',
-    # #             DIR + 'negative/PMC4052923',
-    # #             DIR + 'negative/PMC4689595',
-    # #             DIR + 'negative/PMC5209699',
-    # #             DIR + 'negative/PMC5558095',
-    # #             ]
-    detection(MODEL_DIR, REPORT_DIR, PMC_DIRs, 'negative259.csv')
+    # PMC_DIRs = [DIR + 'negative/PMC419710',
+    #             DIR + 'negative/PMC1828703',
+    #             DIR + 'negative/PMC2447896',
+    #             DIR + 'negative/PMC3538858',
+    #             DIR + 'negative/PMC3885421',
+    #             DIR + 'negative/PMC3900932',
+    #             DIR + 'negative/PMC4052923',
+    #             DIR + 'negative/PMC4689595',
+    #             DIR + 'negative/PMC5209699',
+    #             DIR + 'negative/PMC5558095',
+    #             ]
+    detection(MODEL_DIR, REPORT_DIR, PMC_DIRs, 'negative2_frompdf.csv')
     print('TIME: {} h'.format((time.time() - start) / 360))

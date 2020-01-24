@@ -36,7 +36,7 @@ class Duplication(BaseDetector):
             ransacT=5.0,
             crossCheck=False,
             color=(0, 255, 255),
-            flags=DrawFlags.SHOW_RESULT):
+            flags=DrawFlags.SHOW_FULL_RESULT):
         self.min_kp = min_kp
         self.r = r
         self.min_match = min_match
@@ -113,6 +113,16 @@ class Duplication(BaseDetector):
                     self.draw_match(img1, img2, src_pts)
         return self
 
+    @staticmethod
+    def padding(img, imgarr):
+        H, W, C = imgarr.shape
+        gap = img.gap
+        imgzeros = np.full((H + gap * 2, W + gap * 2, C), 255)
+        for i in range(H):
+            for j in range(W):
+                imgzeros[i + gap, j + gap, :] = imgarr[i, j, :]
+        return imgzeros.astype('uint8')
+
     def draw_match(self, img1, img2, src_pts):
         """
         :param SuspiciousImage img1: SuspiciousImage class instance
@@ -162,14 +172,26 @@ class Duplication(BaseDetector):
                                singlePointColor=None,
                                matchesMask=self.mask_.ravel().tolist(),  # draw only inliers
                                flags=2)
-            self.image_ = cv.drawMatches(
-                img1.keyimg.copy(),
+            img1_rect = self.padding(img1, img1_rect)
+            img2_rect = self.padding(img2, img2_rect)
+            H1, W1, C = img1_rect.shape
+            H2, W2, C = img2_rect.shape
+            if H1 < H2:
+                img1_rect = np.vstack(
+                    [img1_rect, np.full((H2 - H1, W1, C), 255, dtype='uint8')])
+            elif H1 > H2:
+                img2_rect = np.vstack(
+                    [img2_rect, np.full((H1 - H2, W2, C), 255, dtype='uint8')])
+            img_original = np.hstack([img1_rect, img2_rect])
+            img_drow = cv.drawMatches(
+                img1_rect,
                 img1.kp,
-                img2.keyimg.copy(),
+                img2_rect,
                 img2.kp,
                 self.matches_,
                 None,
                 **draw_params)
+            self.image_ = np.vstack([img_original, img_drow])
 
         return self
 
@@ -208,7 +230,7 @@ class CopyMove(Duplication):
             ransacT=5.0,
             crossCheck=False,
             color=(0, 255, 255),
-            flags=DrawFlags.SHOW_RESULT):
+            flags=DrawFlags.SHOW_FULL_RESULT):
         super(
             CopyMove,
             self).__init__(
@@ -274,29 +296,41 @@ class CopyMove(Duplication):
         super(CopyMove, self).find_homography(img1=img1, img2=img1)
 
     def draw_match(self, img1, img2, src_pts):
+        gap = img1.gap
         x, y, w, h = cv.boundingRect(
             np.float32(src_pts)[self.mask_.ravel() == 1])
         img_rect = cv.rectangle(
-            img1.mat.copy(), (x, y), (x + w, y + h), self.color, 2)
+            img1.mat.copy(), (x - gap, y - gap), (x + w - gap, y + h - gap), self.color, 2)
 
         pts = np.float32([[x, y], [x, y + h], [x + w, y + h], [x + w, y]]
                          ).reshape(-1, 1, 2)
         dst = cv.perspectiveTransform(pts, self.M_)
 
         self.image_ = cv.polylines(img_rect,
-                                   [np.int32(dst)],
+                                   [np.int32(dst) - gap],
                                    isClosed=True,
                                    color=self.color,
                                    thickness=3,
                                    lineType=cv.LINE_AA)
 
         if self.flags == DrawFlags.SHOW_FULL_RESULT:
-            for m in self.matches_:
-                cv.line(self.image_, tuple(map(round, img1.kp[m.queryIdx].pt)), tuple(
-                    map(round, img1.kp[m.trainIdx].pt)), color=self.color)
-                cv.circle(self.image_, tuple(map(round, img1.kp[m.queryIdx].pt)), 3,
-                          color=self.color, thickness=2)
-                cv.circle(self.image_, tuple(map(round, img1.kp[m.trainIdx].pt)), 3,
-                          color=self.color, thickness=2)
+            matches_mask = self.mask_.ravel().tolist()
+            for i, m in enumerate(self.matches_):
+                if matches_mask[i] == 1:
+                    cv.line(self.image_,
+                            tuple(
+                                np.round(np.array(img1.kp[m.queryIdx].pt) - gap).astype('int')),
+                            tuple(
+                                np.round(np.array(img1.kp[m.trainIdx].pt) - gap).astype('int')),
+                            color=self.color)
+                    cv.circle(self.image_,
+                              tuple(
+                                  np.round(np.array(img1.kp[m.queryIdx].pt) - gap).astype('int')),
+                              3,
+                              color=self.color,
+                              thickness=2)
+                    cv.circle(self.image_, tuple(np.round(
+                        np.array(img1.kp[m.trainIdx].pt) - gap).astype('int')), 3,
+                        color=self.color, thickness=2)
 
         return self

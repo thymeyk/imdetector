@@ -21,8 +21,13 @@ joblib = "*"
 cython = "*"
 pandas = "*"
 numba = "*"
-pywt = "*"
 django = "*"
+pywavelets = "*"
+weasyprint = "*"
+reportlab = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

@@ -14,7 +14,7 @@
 					<hr class="my-4">
 					<h4 class="text-success">Upload your file to start!</h4>
 					<p>Image file (.jpg, .png, or .tif), Zip file of images (.zip), or PDF file (.pdf) are acceptable.</p>
-					<form action="result" method="POST" enctype="multipart/form-data" class="form-control-file">
+					<form action="progress" method="POST" enctype="multipart/form-data" class="form-control-file">
 					{% csrf_token %}
 					{{ form.as_p }}
 					<button type="submit" class="btn btn-success btn-lg">Submit</button>
@@ -57,11 +57,89 @@
 {#	</div>#}
 {#</div>#}
 
-<div class="bs-docs-section" style="padding-top: 50px; padding-bottom: 50px">
+<div class="bs-docs-section">
+	<div class="row">
+		<div class="col-lg-4">
+			<div class="card mb-3">
+				<div class="card-body">
+					<h2 class="card-title text-primary">Clipping</h2>
+					<h6 class="card-subtitle text-muted">Support card subtitle</h6>
+				</div>
+				<img style="height: 200px; width: 100%; display: block;" src="" alt="Card image">
+				<div class="card-body">
+					<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+				</div>
+				<ul class="list-group list-group-flush">
+					<li class="list-group-item">Cras justo odio</li>
+					<li class="list-group-item">Dapibus ac facilisis in</li>
+					<li class="list-group-item">Vestibulum at eros</li>
+				</ul>
+				<div class="card-body">
+					<a href="#" class="card-link">Card link</a>
+					<a href="#" class="card-link">Another link</a>
+				</div>
+				<div class="card-footer text-muted">
+					2 days ago
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-4">
+			<div class="card mb-3">
+				<div class="card-body">
+					<h2 class="card-title text-primary">Copy-Move</h2>
+					<h6 class="card-subtitle text-muted">Support card subtitle</h6>
+				</div>
+				<img style="height: 200px; width: 100%; display: block;" src="" alt="Card image">
+				<div class="card-body">
+					<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+				</div>
+				<ul class="list-group list-group-flush">
+					<li class="list-group-item">Cras justo odio</li>
+					<li class="list-group-item">Dapibus ac facilisis in</li>
+					<li class="list-group-item">Vestibulum at eros</li>
+				</ul>
+				<div class="card-body">
+					<a href="#" class="card-link">Card link</a>
+					<a href="#" class="card-link">Another link</a>
+				</div>
+				<div class="card-footer text-muted">
+					2 days ago
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-4">
+			<div class="card mb-3">
+				<div class="card-body">
+					<h2 class="card-title text-primary">Cut-Paste</h2>
+					<h6 class="card-subtitle text-muted">Support card subtitle</h6>
+				</div>
+				<img style="height: 200px; width: 100%; display: block;" src="" alt="Card image">
+				<div class="card-body">
+					<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+				</div>
+				<ul class="list-group list-group-flush">
+					<li class="list-group-item">Cras justo odio</li>
+					<li class="list-group-item">Dapibus ac facilisis in</li>
+					<li class="list-group-item">Vestibulum at eros</li>
+				</ul>
+				<div class="card-body">
+					<a href="#" class="card-link">Card link</a>
+					<a href="#" class="card-link">Another link</a>
+				</div>
+				<div class="card-footer text-muted">
+					2 days ago
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="bs-docs-section">
 	<div class="row">
 		<div class="col-lg-12">
 			<div class="page-header" style="padding-bottom: 50px">
-				<h1 id="upload">What's new</h1>
+				<h1 id="upload">Change history</h1>
 			</div>
 		</div>
 	</div>
@@ -76,7 +154,7 @@
 	</div>
 </div>
 
-<div class="bs-docs-section" style="padding-top: 50px; padding-bottom: 50px">
+<div class="bs-docs-section">
 	<div class="row">
 		<div class="col-lg-12">
 			<div class="page-header" style="padding-bottom: 50px">

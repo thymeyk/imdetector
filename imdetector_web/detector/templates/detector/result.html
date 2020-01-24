@@ -1,46 +1,198 @@
 {% extends 'base.html' %}
+{% block nav_detection %}active{% endblock %}
+{% block title %}Results{% endblock %}
+{% block subtitle %} - {{ n }} image(s) were checked{% endblock %}
+{% block lead %}Click image to see details{% endblock %}
 
 {% block content %}
-    <h1 class="my-4">Results</h1>
-    <!--<div class="row">-->
-        <!--{% for r in results %}-->
-            <!--<div class="col-md-12">-->
-                <!--<h3>{{ r.title }}</h3>-->
-                <!--<center>-->
+<div class="bs-results-section">
+	<div class="row">
+		<div class="col-sm-12 mb-5">
+		{% if n_dp == 0 %}
+			<a href="#duplication"><button type="button" class="btn btn-outline-success btn-lg btn-block">Duplication: 0 item</button></a>
+		{% else %}
+			<a href="#duplication"><button type="button" class="btn btn-outline-danger btn-lg btn-block">Duplication: {{ n_dp }} item(s)</button></a>
+		{% endif %}
+		</div>
+	</div>
+	<div class="row">
+		{% for r in results %}
+			<div class="col-sm-3">
+				<div class="card border-light mb-3" style="width: 150px">
+					<div class="card-body">
+						<a href="#{{ r.id }}"><p class="card-title" style="height: 50px">{{ r.name }}</p></a>
+						<a href="#{{ r.id }}"><img style="height: 110px; width: 110px;" src="{{ r.original.url }}" alt="Card image"></a>
+					</div>
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item">Clipping {% if r.clipping == 1 %}<span class="badge badge-danger" style="text-align: right">!</span>{% endif %}</li>
+						<li class="list-group-item">Copy-move {% if r.copymove == 1 %}<span class="badge badge-danger" style="text-align: right">!</span>{% endif %}</li>
+					</ul>
+{#					<div class="card-body" style="text-align: right">#}
+{#						<a href="#{{ r.id }}" class="card-link">See details</a>#}
+{#					</div>#}
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+</div>
 
-                <!--<a href="#">-->
-                    <!--<img class="img-fluid rounded mb-3 mb-md-0" src="{{ r.result.url }}" alt="">-->
-                <!--</a>-->
+<div class="bs-results-section" id="duplication">
+	<div class="row">
+		<div class="bs-list-section col-sm-12 mt-5" style="height: 100px" id="{{ result.id }}">
+			<div class="row">
+				<div class="page-header">
+					<h2>Duplication
+					<small class="text-muted"> - {{ n_dp }} item(s)</small></h2>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% for d in duplication %}
+	<div class="row">
+		<div class="bs-list-section col-sm-12">
+			<div class="row">
+				<div class="col-sm-5">
+					<div class="page-header">
+						<button type="button" class="btn btn-danger pt-1">Suspicious</button>
+						<p class="mb-1 pt-2 text-muted">Image 1:
+							<strong class="text-primary">{{ d.name1 }}</strong>
+						</p>
+						<p class="mb-2 pt-2 text-muted">Image 2:
+							<strong class="text-primary">{{ d.name2 }}</strong>
+						</p>
+						<p class="pt-2">Inliner keypoint ratio: {{ d.mask_ratio }} %</p>
+					</div>
+				</div>
+				<div class="col-sm-7">
+					<div class="img-block">
+						<img class="result-img" src="{{ d.du_img.url }}" alt="Duplication image">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endfor %}
+	<div class="bs-list-section mt-5 col-sm-12" style="height:50px; text-align: right;">
+			<a href="#">Page Top ↑</a>
+	</div>
+</div>
 
-                <!--<hr>-->
-                <!--</center>-->
-            <!--</div>-->
-        <!--{% endfor %}-->
-    <!--</div>-->
-<!--</div>-->
+<div class="bs-results-section">
+	{% for result in results %}
+	<div class="row">
+		<div class="bs-list-section col-sm-12" style="height: 100px; margin-top:20px" id="{{ result.id }}">
+			<div class="row">
+				<div class="page-header">
+					<h2>{{ result.name }}</h2>
+				</div>
+			</div>
+		</div>
 
+		<div class="bs-list-section col-sm-12">
+			<div class="row">
+				<div class="col-sm-5">
+					<div class="page-header">
+						<h2>Input image</h2>
+						<p class="pt-2">File size: {{ result.size }} KB</p>
+					</div>
+				</div>
+				<div class="col-sm-7">
+					<div class="img-block">
+						<img class="result-img" src="{{ result.original.url }}" alt="Original">
+					</div>
+				</div>
+			</div>
+		</div>
 
-    {% for r in results %}
-        <div class="row">
-            <div class="col-md-7">
-              <h3>● {{ r.name }}</h3>
-                <br>
-                  <center>
+		<div class="bs-list-section col-sm-12">
+			<div class="row">
+				<div class="col-sm-5">
+					<div class="page-header">
+						<h3>Histogram Equalization</h3>
+{#						{% if result.cutpaste == 1 %}#}
+{#							<button type="button" class="btn btn-danger pt-1">Suspicious</button>#}
+{#						{% elif result.cutpaste == 0 %}#}
+{#							<button type="button" class="btn btn-success pt-1">Not detected</button>#}
+{#						{% else %}#}
+{#							<button type="button" class="btn btn-secondary pt-1">Inapplicable</button>#}
+{#						{% endif %}#}
+{#						<p style="padding-top: 10px">Probability: {{ result.prob }} %</p>#}
+					</div>
+				</div>
+				<div class="col-sm-7">
+					<div class="img-block">
+						<img class="result-img" src="{{ result.cp_img.url }}" alt="Cut-paste">
+					</div>
+				</div>
+			</div>
+		</div>
 
-                      <a href="#">
-                        <img class="img-fluid rounded mb-3 mb-md-0" src="{{ r.result.url }}" alt="", width="80%">
-                      </a>
-                  </center>
-                <br>
-            </div>
+		<div class="bs-list-section col-sm-12">
+			<div class="row">
+				<div class="col-sm-5">
+					<div class="page-header">
+						<h3>Noise</h3>
+					</div>
+				</div>
+				<div class="col-sm-7">
+					<div class="img-block">
+						<img class="result-img" src="{{ result.no_img.url }}" alt="Noise">
+					</div>
+				</div>
+			</div>
+		</div>
 
-            <div class="col-md-5">
-                <h3><font color="F5AE00">Suspicious!</font></h3>
-                <h4><p>- {{r.title}}</p></h4>
-              <!--<a class="btn btn-primary" href="#">View Project</a>-->
-            </div>
-        </div>
-        <hr>
-    {% endfor %}
+		<div class="bs-list-section col-sm-12">
+			<div class="row">
+				<div class="col-sm-5">
+					<div class="page-header">
+						<h3>Clipping</h3>
+						{% if result.clipping == 1 %}
+							<button type="button" class="btn btn-danger pt-1">Suspicious</button>
+						{% elif result.clipping == 0 %}
+							<button type="button" class="btn btn-success pt-1">Not detected</button>
+						{% else %}
+							<button type="button" class="btn btn-secondary pt-1">Inapplicable</button>
+						{% endif %}
+						<p class="pt-2">Area ratio: {{ result.area_ratio }} %</p>
+					</div>
+				</div>
+				<div class="col-sm-7">
+					<div class="img-block">
+						<img class="result-img" src="{{ result.cl_img.url }}" alt="Clipping">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="bs-list-section col-sm-12">
+			<div class="row">
+				<div class="col-sm-5">
+					<div class="page-header">
+						<h3>Copy-move</h3>
+						{% if result.copymove == 1 %}
+							<button type="button" class="btn btn-danger pt-1">Suspicious</button>
+						{% elif result.copymove == 0 %}
+							<button type="button" class="btn btn-success pt-1">Not detected</button>
+						{% else %}
+							<button type="button" class="btn btn-secondary pt-1">Inapplicable</button>
+						{% endif %}
+						<p class="pt-2">Inliner keypoint ratio: {{ result.mask_ratio }} %</p>
+					</div>
+				</div>
+				<div class="col-sm-7">
+					<div class="img-block">
+						<img class="result-img" src="{{ result.cm_img.url }}" alt="Copy-move">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="bs-list-section mt-5 col-sm-12" style="height:50px; text-align: right;">
+				<a href="#">Page Top ↑</a>
+		</div>
+	</div>
+	{% endfor %}
+</div>
 
 {% endblock %}

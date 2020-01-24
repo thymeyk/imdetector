@@ -36,7 +36,7 @@ class Clipping(BaseDetector):
         self.ratio_ = 0
         self.image_ = None
         self.find_flat_area(img)
-        result = 1 if self.ratio_ > 0.001 else 0
+        result = 1 if self.ratio_ > 0 else 0
         return result
 
     def find_flat_area(self, img):
@@ -56,8 +56,6 @@ class Clipping(BaseDetector):
             if self.flags == DrawFlags.SHOW_RESULT or self.flags == DrawFlags.SHOW_FULL_RESULT:
                 self.image_ = cv.drawContours(
                     img.mat.copy(), cnt, -1, self.color, -1)
-            self.ratio_ = np.sum(
-                self.image_[
-                    :, :, 1] == 255) / img.gray.flatten().shape[0]
+            self.ratio_ = np.sum(lap == 255) / img.gray.flatten().shape[0]
 
         return self

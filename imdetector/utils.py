@@ -1,9 +1,11 @@
 import os
+import shutil
 
 
 def mkdir(DIR):
-    if not os.path.isdir(DIR):
-        os.makedirs(DIR)
+    if os.path.isdir(DIR):
+        shutil.rmtree(DIR)
+    os.makedirs(DIR)
     return DIR
 
 

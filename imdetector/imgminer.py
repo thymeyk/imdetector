@@ -89,5 +89,16 @@ def extract_img_from_pdf(pdf_file, SAVE_DIR):
     IMG_DIR = os.path.join(SAVE_DIR, 'img')
     os.makedirs(IMG_DIR, exist_ok=True)
     images = imgminer(pdf_file, OUT_DIR=IMG_DIR)
-    files = glob.glob(IMG_DIR + '*.png')
-    Dismantler.dismantle(files, SAVE_DIR)
+    files = glob.glob(os.path.join(IMG_DIR, '*.png'))
+    print(os.path.join(IMG_DIR, '*.png'))
+    print(files)
+    thresholds = {
+        'blackThres': 0.8,
+        'whiteThres': 0.8,
+        'white2Thres': 0.001,
+        'whiteblackThres': 0.9,
+        'areaThres': 1000,
+        'splitThres': 0.999,
+        'varThres': 0,
+        'var2Thres': 100}
+    Dismantler(thresholds=thresholds).dismantle(files, SAVE_DIR)
