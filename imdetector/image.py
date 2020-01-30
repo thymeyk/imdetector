@@ -8,13 +8,15 @@ class SuspiciousImage:
     def __init__(self,
                  path=None, hist_eq=True,
                  algorithm='orb', nfeatures=5000,
-                 dsize=256, gap=32):
+                 dsize=256, gap=32, h=200, w=400):
         self.path = path
         self.hist_eq = hist_eq
         self.algorithm = algorithm
         self.nfeatures = nfeatures
         self.dsize = dsize
         self.gap = gap
+        self.h = h
+        self.w = w
 
         self.mat = None
         self.gray = None
@@ -44,8 +46,26 @@ class SuspiciousImage:
         self.keypoint()
         self.laplacian()
 
+        # 保存用のサイズ
+        height, width = self.gray.shape
+        scale = self.h / height
+        if width * scale > self.w:
+            scale = self.w / width
+        self.h = int(height * scale)
+        self.w = int(width * scale)
+
         self.noise = 0
-        self.no_img = 255 - np.where(self.lap > 4, 4, self.lap) / 4 * 255
+        self.no_img = cv.resize(
+            255 -
+            np.where(
+                self.lap > 4,
+                4,
+                self.lap) /
+            4 *
+            255,
+            dsize=(
+                self.w,
+                self.h))
         self.dist = 0
 
         self.clipping = 0

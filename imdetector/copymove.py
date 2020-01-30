@@ -163,7 +163,14 @@ class Duplication(BaseDetector):
             fig.canvas.draw()
             s, (width, height) = fig.canvas.print_to_buffer()
             X = np.frombuffer(s, np.uint8).reshape((height, width, 4))
-            self.image_ = cv.cvtColor(X, cv.COLOR_RGBA2BGRA)
+            scale = 400 / width
+            self.image_ = cv.resize(
+                cv.cvtColor(
+                    X,
+                    cv.COLOR_RGBA2BGRA),
+                dsize=None,
+                fx=scale,
+                fy=scale)
 
             plt.close()
 
