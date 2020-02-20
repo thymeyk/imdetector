@@ -1,6 +1,6 @@
 import numpy as np
 import cv2 as cv
-from .base import BaseDetector, DrawFlags
+from base import BaseDetector, DrawFlags
 
 
 class Clipping(BaseDetector):
@@ -43,8 +43,8 @@ class Clipping(BaseDetector):
         lap = img.lap
         lap = np.where(lap < 1, 255, 0).astype('uint8')
         lap = cv.medianBlur(lap, ksize=self.ksize)
-        white = np.where(img.gray == 255, 0, 255).astype('uint8')
-        lap = lap & white
+        # white = np.where(img.gray == 255, 0, 255).astype('uint8')
+        # lap = lap & white
 
         _, contours, hierarchy = cv.findContours(
             lap, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)

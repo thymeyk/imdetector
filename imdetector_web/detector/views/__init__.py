@@ -50,9 +50,6 @@ def progress(req):
         SuspiciousDuplication.objects.all().delete()
     except BaseException:
         print('no data')
-    if os.path.exists(EXTRACT_DIR):
-        shutil.rmtree(EXTRACT_DIR)
-    os.mkdir(EXTRACT_DIR)
 
     """ ファイル登録 """
     file = File()

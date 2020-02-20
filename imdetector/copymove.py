@@ -1,8 +1,8 @@
 import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
-from .base import BaseDetector, DrawFlags
-from .image import SuspiciousImage
+from base import BaseDetector, DrawFlags
+from image import SuspiciousImage
 
 
 class Duplication(BaseDetector):

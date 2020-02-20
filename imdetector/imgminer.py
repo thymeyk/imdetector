@@ -6,7 +6,7 @@ from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import LTContainer, LTImage
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
-from imdetector.dismantler import Dismantler
+from dismantler import Dismantler
 
 
 def find_images_recursively(layout_obj):

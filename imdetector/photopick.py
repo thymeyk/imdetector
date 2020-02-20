@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 from sklearn.feature_extraction.image import extract_patches_2d
 
-from imdetector.base import BaseDetectorMachine, BaseFeatureExtractor, DrawFlags
+from base import BaseDetectorMachine, BaseFeatureExtractor, DrawFlags
 
 
 class DictionaryFeatureExtractor(BaseFeatureExtractor):

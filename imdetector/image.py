@@ -69,11 +69,11 @@ class SuspiciousImage:
         self.dist = 0
 
         self.clipping = 0
-        self.cl_img = self.mat
+        # self.cl_img = self.mat
         self.area_ratio = 0
 
         self.copymove = -1
-        self.cm_img = self.mat
+        # self.cm_img = self.mat
         self.mask_ratio = 0
 
         self.cutpaste = -1

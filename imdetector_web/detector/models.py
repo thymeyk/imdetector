@@ -61,6 +61,8 @@ class Suspicious(models.Model):
 
     name = models.CharField(max_length=256, null=True)
     size = models.IntegerField(null=True, default=0)
+    h = models.IntegerField(null=True, default=0)
+    w = models.IntegerField(null=True, default=0)
     original = models.ImageField(upload_to='results/{}/'.format(post_id))
 
     noise = models.IntegerField(null=True, default=0)

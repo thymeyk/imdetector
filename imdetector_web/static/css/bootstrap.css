@@ -10780,8 +10780,8 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .result-img {
-  height: 100%;
-  width: 100%;
+  height: 200px;
+  width: auto;
   max-width: 400px;
   display: block;
   margin: auto;

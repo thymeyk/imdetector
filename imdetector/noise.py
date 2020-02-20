@@ -2,8 +2,8 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
-from imdetector.image import SuspiciousImage
-from imdetector.base import BaseDetectorMachine, BaseFeatureExtractor, DrawFlags
+from image import SuspiciousImage
+from base import BaseDetectorMachine, BaseFeatureExtractor, DrawFlags
 
 
 class NoiseFeatureExtractor(BaseFeatureExtractor):

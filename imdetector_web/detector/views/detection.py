@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(
 def detection(post_id):
     """ zipファイル展開 """
     file = File.objects.get(pk=post_id)
-    p_id = post_id % 100
+    p_id = post_id % 10
     OUT_DIR = os.path.join(
         BASE_DIR,
         'media',
@@ -55,7 +55,7 @@ def detection(post_id):
     )
     if os.path.exists(RESULT_DIR):
         shutil.rmtree(RESULT_DIR)
-    os.mkdir(RESULT_DIR)
+    os.makedirs(RESULT_DIR)
 
     # # pdfファイル展開
     # if file.zip.path.split('.')[-1] == 'pdf' or file.zip.path.split('.')[-1] == 'PDF':
@@ -138,6 +138,7 @@ def detection(post_id):
 
         suspicious = Suspicious()
         suspicious.post_id = p_id
+        suspicious.w, suspicious.h = dsize
         suspicious.name = img.name
         suspicious.size = img.size
         file_name = os.path.join(
@@ -153,17 +154,23 @@ def detection(post_id):
         # suspicious.no_img = img.no_img
 
         suspicious.clipping = img.clipping
-        file_name = os.path.join(
-            RESULT_DIR, '{}_cl.jpg'.format(nameroot))
-        cv.imwrite(file_name, img.cl_img)
-        suspicious.cl_img = file_name.split('media/')[-1]
+        if img.clipping:
+            file_name = os.path.join(
+                RESULT_DIR, '{}_cl.jpg'.format(nameroot))
+            cv.imwrite(file_name, img.cl_img)
+            suspicious.cl_img = file_name.split('media/')[-1]
+        else:
+            suspicious.cl_img = suspicious.original
         suspicious.area_ratio = int(img.area_ratio * 100)
 
         suspicious.copymove = img.copymove
-        file_name = os.path.join(
-            RESULT_DIR, '{}_cm.jpg'.format(nameroot))
-        cv.imwrite(file_name, img.cm_img)
-        suspicious.cm_img = file_name.split('media/')[-1]
+        if suspicious.copymove:
+            file_name = os.path.join(
+                RESULT_DIR, '{}_cm.jpg'.format(nameroot))
+            cv.imwrite(file_name, img.cm_img)
+            suspicious.cm_img = file_name.split('media/')[-1]
+        else:
+            suspicious.cm_img = suspicious.original
         suspicious.mask_ratio = int(img.mask_ratio * 100)
 
         # suspicious.cutpaste = img.cutpaste

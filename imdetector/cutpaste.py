@@ -8,8 +8,8 @@ from multiprocessing import Pool
 
 from skimage.feature import local_binary_pattern
 
-from .utils import extract_nonoverlap_patches
-from .base import BaseFeatureExtractor, DrawFlags, Color, BaseDetectorMachine
+from utils import extract_nonoverlap_patches
+from base import BaseFeatureExtractor, DrawFlags, Color, BaseDetectorMachine
 
 
 class DWTFeatureExtractor(BaseFeatureExtractor):
