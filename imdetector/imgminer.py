@@ -79,8 +79,8 @@ def imgminer(pdf_path, OUT_DIR, save=True, file_ext='png'):
                 if imgarr is not None:
                     images.append(imgarr)
                     if save:
-                        file_name = 'page{}_{}.{}'.format(
-                            p, ltimage.name, file_ext)
+                        file_name = '{}-page{}-{}.{}'.format(
+                            os.path.basename(pdf_path), p, ltimage.name, file_ext)
                         cv.imwrite(os.path.join(OUT_DIR, file_name), imgarr)
     return images
 
@@ -90,8 +90,6 @@ def extract_img_from_pdf(pdf_file, SAVE_DIR):
     os.makedirs(IMG_DIR, exist_ok=True)
     images = imgminer(pdf_file, OUT_DIR=IMG_DIR)
     files = glob.glob(os.path.join(IMG_DIR, '*.png'))
-    print(os.path.join(IMG_DIR, '*.png'))
-    print(files)
     thresholds = {
         'blackThres': 0.8,
         'whiteThres': 0.8,

@@ -36,7 +36,7 @@ class Duplication(BaseDetector):
             ransacT=5.0,
             crossCheck=False,
             color=(0, 255, 255),
-            flags=DrawFlags.SHOW_FULL_RESULT):
+            flags=DrawFlags.SHOW_RESULT):
         self.min_kp = min_kp
         self.r = r
         self.min_match = min_match
@@ -141,7 +141,7 @@ class Duplication(BaseDetector):
         dst = cv.perspectiveTransform(pts, self.M_)
 
         img2_rect = cv.polylines(img2.mat.copy(), [np.int32(dst) - gap],
-                                 isClosed=True, color=self.color, thickness=3,
+                                 isClosed=True, color=self.color, thickness=2,
                                  lineType=cv.LINE_AA)  # LINE_AA:アンチエイリアス
 
         if self.flags == DrawFlags.SHOW_RESULT:
@@ -237,7 +237,7 @@ class CopyMove(Duplication):
             ransacT=5.0,
             crossCheck=False,
             color=(0, 255, 255),
-            flags=DrawFlags.SHOW_FULL_RESULT):
+            flags=DrawFlags.SHOW_RESULT):
         super(
             CopyMove,
             self).__init__(
@@ -317,7 +317,7 @@ class CopyMove(Duplication):
                                    [np.int32(dst) - gap],
                                    isClosed=True,
                                    color=self.color,
-                                   thickness=3,
+                                   thickness=2,
                                    lineType=cv.LINE_AA)
 
         if self.flags == DrawFlags.SHOW_FULL_RESULT:
@@ -337,7 +337,7 @@ class CopyMove(Duplication):
                               color=self.color,
                               thickness=2)
                     cv.circle(self.image_, tuple(np.round(
-                        np.array(img1.kp[m.trainIdx].pt) - gap).astype('int')), 3,
+                        np.array(img1.kp[m.trainIdx].pt) - gap).astype('int')), 2,
                         color=self.color, thickness=2)
 
         return self

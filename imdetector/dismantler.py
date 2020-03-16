@@ -1,9 +1,6 @@
 import os
 import cv2 as cv
 import numpy as np
-import seaborn as sns
-
-sns.set(style='white', context='talk')
 
 
 class Dismantler:
@@ -15,9 +12,9 @@ class Dismantler:
                 'white2Thres': 0.001,
                 'whiteblackThres': 0.9,
                 'areaThres': 1000,
-                'splitThres': 0.8,
-                'varThres': 3,
-                'var2Thres': 50}
+                'splitThres': 0.999,
+                'varThres': 0,
+                'var2Thres': 100}
         self.thresholds = thresholds
 
     def dismantle(self, files, SAVE_DIR):
@@ -169,7 +166,6 @@ class Dismantler:
             else:
                 dst = img[y: y + h, x: x + w]
             if img.shape[0] > 20 and img.shape[1] > 20:
-                print('{}-{:03}.png'.format(savename.rsplit('.', 1)[-2], i))
                 cv.imwrite('{}-{:03}.png'.format(savename.rsplit('.', 1)
                                                  [-2], i), np.array(dst).astype('uint8'))
             # cvimshow(np.array(dst).astype('uint8'))

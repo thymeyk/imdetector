@@ -7,23 +7,16 @@ verify_ssl = true
 autopep8 = "*"
 
 [packages]
-matplotlib = "*"
-scipy = "*"
-seaborn = "*"
+matplotlib = "==3.0.3"
 pdfminer-six = "*"
 chardet = "*"
-scikit-image = "*"
 tornado = "==5.1.1"
 scikit-learn = "*"
 opencv-contrib-python = "<3.4.5"
 opencv-python = "<=3.4.5"
-img2pdf = "*"
-joblib = "*"
-cython = "*"
 pandas = "*"
-numba = "*"
 django = "*"
-pywavelets = "*"
+scipy = "*"
 pyinstaller = "*"
 
 [requires]
