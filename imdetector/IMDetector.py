@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 import glob
 import shutil
 import datetime
@@ -207,7 +208,8 @@ class AppForm(tk.Frame):
 
             # Classify images
             if self.classifyChkVar.get():
-                detector = PhotoPick()
+                detector = PhotoPick(model_name=os.path.join(sys.prefix, 'photopicker_rf_lee_2700.sav'),
+                                     param_name=os.path.join(sys.prefix, 'photopicker_rf_lee_2700.sav-param.npz'),)
                 pred = detector.detect(suspicious_images)
                 suspicious_images = [img for img, p in zip(
                     suspicious_images, pred) if p]
