@@ -2,11 +2,11 @@
 
 IMDetector is a Python module for image manipulation detection.
 
-We are also developing a web application platform.
+We are also developing a GUI application.
 
-[Short demo V0](https://youtu.be/3m_Hl_Dkfg8) (Youtube movie)
+<!-- [Short demo V0](https://youtu.be/3m_Hl_Dkfg8) (Youtube movie)
 
-[![Short demo](http://img.youtube.com/vi/3m_Hl_Dkfg8/0.jpg)](http://www.youtube.com/watch?v=3m_Hl_Dkfg8)
+[![Short demo](http://img.youtube.com/vi/3m_Hl_Dkfg8/0.jpg)](http://www.youtube.com/watch?v=3m_Hl_Dkfg8) -->
 
 ### *IMDetector* 生命科学における画像不正自動検出ツール
 
@@ -27,3 +27,8 @@ We are also developing a web application platform.
 - Rublee, E., Rabaud, V., Konolige, K., & Bradski, G. (2011). ORB: An efficient alternative to SIFT or SURF. In 2011 International Conference on Computer Vision (pp. 2564–2571). IEEE. https://doi.org/10.1109/ICCV.2011.6126544
 - Zhang, Q., Lu, W., Wang, R., & Li, G. (2018). Digital image splicing detection based on Markov features in block DWT domain. Multimedia Tools and Applications, 77(23), 31239–31260. https://doi.org/10.1007/s11042-018-6230-z
 - Zhu, Y., Shen, X., & Chen, H. (2016). Copy-move forgery detection based on scaled ORB. Multimedia Tools and Applications, 75(6), 3221–3233. https://doi.org/10.1007/s11042-014-2431-2
+
+## License
+
+GNU General Public License v3.0
+See [LISENCE.txt](https://github.com/thymeyk/imdetector/blob/master/LICENSE.txt)

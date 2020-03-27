@@ -321,7 +321,6 @@ class AppForm(tk.Frame):
         except:
             mess.showerror(
                 'IMDetector', 'The operation failed.')
-        self.img_reset()
         return None
 
     def extraction(self, pdf_file):
